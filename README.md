@@ -155,6 +155,23 @@ Jwt__Key=HotelOS_dev_key_change_in_production_1234567890
 └── nginx/                  # Reverse proxy config
 ```
 
+## Changelog
+
+```
+c0597a0 docs(readme): finalize system documentation and installation guide
+6338540 test(scenarios): implement verification suite for TS-01 through TS-08
+af1fb7e refactor(code): apply strict coding standards and constructor injection
+0149bc8 perf(db): optimize room availability queries with serializable transactions
+78d7f3a fix(security): apply input validation middleware to all public endpoints
+3e84193 feat(dashboard): integrate websockets for real-time operational monitoring
+9d27292 feat(maintenance): add priority queue logic for technician assignments
+2c8ff31 feat(room-service): implement food order state machine and queue
+63f42aa feat(housekeeping): create housekeeping service and room status workflow
+27c43c2 feat(broker): setup RabbitMQ connection and event bus configuration
+e2868b5 feat(reception): implement room assignment algorithm with inventory logic
+60265e5 feat(infra): initialize project structure and docker-compose orchestration
+```
+
 ## Testing
 
 ```bash
