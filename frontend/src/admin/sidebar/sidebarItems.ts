@@ -11,7 +11,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Dashboard',
     icon: 'Zap',
     items: [
-      { title: 'Operations Center', path: '/admin/dashboard' },
+      { title: 'Operations Center', path: '/admin/dashboard', roles: ['SuperAdmin', 'Admin', 'Receptionist', 'Housekeeper', 'Technician', 'KitchenStaff', 'Accountant'] },
     ],
   },
   {
@@ -19,10 +19,10 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Hotel Management',
     icon: 'Building',
     items: [
-      { title: 'Rooms', path: '/admin/rooms' },
-      { title: 'Bookings', path: '/admin/bookings' },
-      { title: 'Housekeeping', path: '/admin/housekeeping' },
-      { title: 'Maintenance', path: '/admin/maintenance' },
+      { title: 'Rooms', path: '/admin/rooms', roles: ['SuperAdmin', 'Admin', 'Receptionist'] },
+      { title: 'Bookings', path: '/admin/bookings', roles: ['SuperAdmin', 'Admin', 'Receptionist'] },
+      { title: 'Housekeeping', path: '/admin/housekeeping', roles: ['SuperAdmin', 'Admin', 'Housekeeper'] },
+      { title: 'Maintenance', path: '/admin/maintenance', roles: ['SuperAdmin', 'Admin', 'Technician'] },
     ],
   },
   {
@@ -30,7 +30,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Room Service',
     icon: 'UtensilsCrossed',
     items: [
-      { title: 'Orders', path: '/admin/orders' },
+      { title: 'Orders', path: '/admin/orders', roles: ['SuperAdmin', 'Admin', 'KitchenStaff'] },
     ],
   },
   {
@@ -38,7 +38,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Finance',
     icon: 'CreditCard',
     items: [
-      { title: 'Payments', path: '/admin/payments' },
+      { title: 'Payments', path: '/admin/payments', roles: ['SuperAdmin', 'Admin', 'Accountant'] },
     ],
   },
   {
@@ -46,19 +46,18 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Access Control',
     icon: 'Shield',
     items: [
-      { title: 'Users', path: '/admin/users' },
-      { title: 'Roles', path: '/admin/roles' },
-      { title: 'Permissions', path: '/admin/permissions' },
-      { title: 'Audit Logs', path: '/admin/audit-logs' },
+      { title: 'Users', path: '/admin/users', roles: ['SuperAdmin', 'Admin'] },
+      { title: 'Roles', path: '/admin/roles', roles: ['SuperAdmin', 'Admin'] },
+      { title: 'Permissions', path: '/admin/permissions', roles: ['SuperAdmin', 'Admin'] },
+      { title: 'Audit Logs', path: '/admin/audit-logs', roles: ['SuperAdmin', 'Admin'] },
     ],
   },
-  // Monitoring/infrastructure pages are intentionally omitted from the main sidebar.
   {
     id: 'settings',
     label: 'Settings',
     icon: 'Settings',
     items: [
-      { title: 'Settings', path: '/admin/settings' },
+      { title: 'Settings', path: '/admin/settings', roles: ['SuperAdmin', 'Admin'] },
     ],
   },
 ];

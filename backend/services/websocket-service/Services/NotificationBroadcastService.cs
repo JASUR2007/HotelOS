@@ -16,19 +16,35 @@ public sealed class NotificationBroadcastService(
         object? eventData = null,
         CancellationToken cancellationToken = default)
     {
-        await repository.AddAsync(new NotificationRecord
+        var record = new NotificationRecord
         {
             Type = notification.Type,
             Title = notification.Title,
             Message = notification.Message,
-            CreatedAt = DateTimeOffset.UtcNow
-        }, cancellationToken);
+            CreatedAt = DateTimeOffset.UtcNow,
+            TargetRole = notification.TargetRole
+        };
+        await repository.AddAsync(record, cancellationToken);
 
-        await hubContext.Clients.All.SendAsync("NotificationReceived", notification, cancellationToken);
+        if (!string.IsNullOrEmpty(notification.TargetRole))
+        {
+            await hubContext.Clients.Group(notification.TargetRole).SendAsync("NotificationReceived", notification, cancellationToken);
+        }
+        else
+        {
+            await hubContext.Clients.All.SendAsync("NotificationReceived", notification, cancellationToken);
+        }
 
         if (methodName != "NotificationReceived")
         {
-            await hubContext.Clients.All.SendAsync(methodName, eventData ?? notification, cancellationToken);
+            if (!string.IsNullOrEmpty(notification.TargetRole))
+            {
+                await hubContext.Clients.Group(notification.TargetRole).SendAsync(methodName, eventData ?? notification, cancellationToken);
+            }
+            else
+            {
+                await hubContext.Clients.All.SendAsync(methodName, eventData ?? notification, cancellationToken);
+            }
         }
     }
 

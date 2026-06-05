@@ -8,24 +8,28 @@ public sealed class BookingRepository(ReceptionDbContext context) : IBookingRepo
 {
     public async Task<Booking> AddAsync(Booking booking, CancellationToken cancellationToken = default)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
-
-        var hasOverlap = await context.Bookings.AnyAsync(existing =>
-            existing.RoomId == booking.RoomId &&
-            existing.Status != "CheckedOut" &&
-            existing.CheckInDate < booking.CheckOutDate &&
-            booking.CheckInDate < existing.CheckOutDate,
-            cancellationToken);
-
-        if (hasOverlap)
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            throw new InvalidOperationException($"Room {booking.RoomId} is already booked for the requested period.");
-        }
+            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
-        context.Bookings.Add(booking);
-        await context.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return booking;
+            var hasOverlap = await context.Bookings.AnyAsync(existing =>
+                existing.RoomId == booking.RoomId &&
+                existing.Status != "CheckedOut" &&
+                existing.CheckInDate < booking.CheckOutDate &&
+                booking.CheckInDate < existing.CheckOutDate,
+                cancellationToken);
+
+            if (hasOverlap)
+            {
+                throw new InvalidOperationException($"Room {booking.RoomId} is already booked for the requested period.");
+            }
+
+            context.Bookings.Add(booking);
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return booking;
+        });
     }
 
     public Task<Booking?> GetByIdAsync(int bookingId, CancellationToken cancellationToken = default)

@@ -36,26 +36,25 @@ function App() {
         <Route path="/admin" element={<ProtectedRoute requiredPermissions={['view_dashboard']} />}>
           <Route element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="rooms" element={<AdminRoomsPage />} />
-            <Route path="bookings" element={<Bookings />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="maintenance" element={<Maintenance />} />
-            <Route path="housekeeping" element={<HousekeepingPage />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            
-            <Route path="payments" element={<Payments />} />
-            <Route path="users" element={<Users />} />
-            <Route path="roles" element={<Roles />} />
-            <Route path="permissions" element={<Permissions />} />
-            <Route path="audit-logs" element={<AuditLogs />} />
+            <Route path="dashboard" element={<ProtectedRoute requiredPermissions={['view_dashboard']}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="rooms" element={<ProtectedRoute requiredPermissions={['manage_rooms']}><AdminRoomsPage /></ProtectedRoute>} />
+            <Route path="bookings" element={<ProtectedRoute requiredPermissions={['create_booking']}><Bookings /></ProtectedRoute>} />
+            <Route path="orders" element={<ProtectedRoute requiredPermissions={['create_orders']}><Orders /></ProtectedRoute>} />
+            <Route path="maintenance" element={<ProtectedRoute requiredPermissions={['view_maintenances']}><Maintenance /></ProtectedRoute>} />
+            <Route path="housekeeping" element={<ProtectedRoute requiredPermissions={['manage_rooms']}><HousekeepingPage /></ProtectedRoute>} />
+            <Route path="reports" element={<ProtectedRoute requiredPermissions={['view_reports']}><Reports /></ProtectedRoute>} />
+            <Route path="notifications" element={<ProtectedRoute allowedRoles={[]}><NotificationsPage /></ProtectedRoute>} />
+            <Route path="payments" element={<ProtectedRoute requiredPermissions={['manage_payments']}><Payments /></ProtectedRoute>} />
+            <Route path="users" element={<ProtectedRoute requiredPermissions={['manage_users']}><Users /></ProtectedRoute>} />
+            <Route path="roles" element={<ProtectedRoute requiredPermissions={['manage_roles']}><Roles /></ProtectedRoute>} />
+            <Route path="permissions" element={<ProtectedRoute requiredPermissions={['manage_permissions']}><Permissions /></ProtectedRoute>} />
+            <Route path="audit-logs" element={<ProtectedRoute requiredPermissions={['view_audit_logs']}><AuditLogs /></ProtectedRoute>} />
             <Route path="access-denied" element={<AccessDenied />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="settings/infrastructure/rabbitmq" element={<RabbitMQMonitorPage />} />
-            <Route path="settings/infrastructure/database" element={<DatabaseMonitorPage />} />
-            <Route path="settings/infrastructure/websockets" element={<WebsocketConnectionsPage />} />
-            <Route path="settings/infrastructure/event-logs" element={<EventLogs />} />
+            <Route path="settings" element={<ProtectedRoute requiredPermissions={['view_settings']}><Settings /></ProtectedRoute>} />
+            <Route path="settings/infrastructure/rabbitmq" element={<ProtectedRoute requiredPermissions={['view_settings']}><RabbitMQMonitorPage /></ProtectedRoute>} />
+            <Route path="settings/infrastructure/database" element={<ProtectedRoute requiredPermissions={['view_settings']}><DatabaseMonitorPage /></ProtectedRoute>} />
+            <Route path="settings/infrastructure/websockets" element={<ProtectedRoute requiredPermissions={['view_settings']}><WebsocketConnectionsPage /></ProtectedRoute>} />
+            <Route path="settings/infrastructure/event-logs" element={<ProtectedRoute requiredPermissions={['view_settings']}><EventLogs /></ProtectedRoute>} />
           </Route>
         </Route>
 

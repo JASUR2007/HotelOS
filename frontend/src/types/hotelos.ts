@@ -251,7 +251,10 @@ export type PermissionName =
   | 'view_settings'
   | 'view_maintenances'
   | 'manage_payments'
-  | 'view_reports';
+  | 'view_reports'
+  | 'view_audit_logs'
+  | 'view_event_logs'
+  | 'process_refunds';
 
 export interface AuthUser {
   id: string;

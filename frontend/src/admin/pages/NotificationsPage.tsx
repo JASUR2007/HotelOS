@@ -3,12 +3,12 @@ import GenericListPage from './GenericListPage';
 import { fetchNotifications, getHotelApiBaseUrl } from '../../api';
 
 interface Notification {
-  id: string | number;
+  id: number;
   title: string;
   message: string;
   severity: string;
   createdAt: string;
-  read?: boolean;
+  read: boolean;
 }
 
 export default function NotificationsPage() {
@@ -19,12 +19,13 @@ export default function NotificationsPage() {
     fetchNotifications()
       .then((data) => {
         const mapped = (data as any[]).map((n: any) => ({
-          id: n.id ?? n.createdAt,
+          id: n.id ?? 0,
           title: n.title ?? '',
           message: n.message ?? '',
           severity: n.type === 'critical' || n.type === 'maintenance' ? 'critical' :
                     n.type === 'warning' ? 'warning' : 'info',
           createdAt: n.createdAt ?? '',
+          read: n.isRead ?? false,
         }));
         setNotifications(mapped);
       })
@@ -38,12 +39,15 @@ export default function NotificationsPage() {
     critical: 'bg-red-100 text-red-800',
   };
 
-  async function markRead(id: string | number) {
+  async function markRead(id: number) {
+    const prev = notifications.find((n) => n.id === id);
+    if (!prev || prev.read) return;
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     try {
-      const res = await fetch(`${getHotelApiBaseUrl()}/notifications/${id}/read`, { method: 'PUT' });
-      if (!res.ok) throw new Error('Failed');
-    } catch { /* ignore */ }
+      await fetch(`${getHotelApiBaseUrl()}/notifications/${id}/read`, { method: 'PUT' });
+    } catch {
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: false } : n)));
+    }
   }
 
   return (

@@ -24,6 +24,7 @@ public sealed class WebsocketDbContext(DbContextOptions<WebsocketDbContext> opti
             entity.Property(item => item.Type).HasMaxLength(50).IsRequired();
             entity.Property(item => item.Title).HasMaxLength(200).IsRequired();
             entity.Property(item => item.Message).HasMaxLength(500).IsRequired();
+            entity.Property(item => item.TargetRole).HasMaxLength(50);
             entity.HasIndex(item => item.CreatedAt);
             entity.HasData(
                 new NotificationRecord { Id = 1, Type = "reception", Title = "Guest checked in", Message = "Room assignment completed for Amelia Stone.", CreatedAt = new DateTimeOffset(2026, 5, 20, 9, 12, 0, TimeSpan.Zero) },

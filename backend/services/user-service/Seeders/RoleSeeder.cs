@@ -8,7 +8,7 @@ public static class RoleSeeder
 {
     private static readonly Dictionary<string, string[]> RolePermissions = new()
     {
-        ["SuperAdmin"] = ["create_booking", "update_booking", "delete_booking", "manage_rooms", "manage_users", "manage_roles", "manage_permissions", "view_dashboard", "view_settings", "view_maintenances", "manage_payments", "view_reports", "view_audit_logs", "view_event_logs", "process_refunds"],
+        ["SuperAdmin"] = ["create_booking", "update_booking", "delete_booking", "manage_rooms", "manage_users", "manage_roles", "manage_permissions", "create_orders", "update_orders", "resolve_maintenance", "assign_maintenance", "view_dashboard", "view_settings", "view_maintenances", "manage_payments", "view_reports", "view_audit_logs", "view_event_logs", "process_refunds"],
         ["Admin"] = ["create_booking", "update_booking", "manage_rooms", "manage_users", "view_dashboard", "view_settings", "view_maintenances", "view_reports", "view_audit_logs"],
         ["Receptionist"] = ["create_booking", "update_booking", "view_dashboard", "view_maintenances"],
         ["Housekeeper"] = ["view_dashboard"],

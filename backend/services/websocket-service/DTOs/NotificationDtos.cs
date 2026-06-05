@@ -6,4 +6,4 @@ namespace HotelOS.WebsocketService.DTOs;
 /// <param name="Message">The full message content body. <example>Room 101 has been booked by John Doe</example></param>
 /// <param name="CreatedAt">The ISO 8601 timestamp when the notification was created. <example>2026-06-01T10:00:00Z</example></param>
 /// <param name="Type">The category of the notification. <example>Booking</example></param>
-public sealed record RealtimeNotificationDto(string Id, string Title, string Message, string CreatedAt, string Type);
+public sealed record RealtimeNotificationDto(string Id, string Title, string Message, string CreatedAt, string Type, bool IsRead = false, string? TargetRole = null);

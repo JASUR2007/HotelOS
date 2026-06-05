@@ -11,14 +11,22 @@ public sealed class SettingsController : ControllerBase
     {
         ["Notifications"] = "Enabled",
         ["Payments"] = "Live",
-        ["RBAC"] = "Strict"
+        ["RBAC"] = "Strict",
+        ["RabbitMQ"] = "Healthy",
+        ["Database"] = "Healthy",
+        ["WebSockets"] = "Healthy",
+        ["Event Logs"] = "Healthy"
     };
 
     private static readonly Dictionary<string, string> Descriptions = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Notifications"] = "Realtime alerts via SignalR",
         ["Payments"] = "Payment provider and reconciliation state",
-        ["RBAC"] = "Role and permission enforcement enabled"
+        ["RBAC"] = "Role and permission enforcement enabled",
+        ["RabbitMQ"] = "Queues, consumers, messages",
+        ["Database"] = "Postgres status, connections",
+        ["WebSockets"] = "SignalR connections",
+        ["Event Logs"] = "Routing and delivery"
     };
 
     [HttpGet]
@@ -48,6 +56,7 @@ public sealed class SettingsController : ControllerBase
         "notifications" => value is "Enabled" or "Disabled",
         "payments" => value is "Live" or "Test" or "Disabled",
         "rbac" => value is "Strict" or "Standard" or "Disabled",
+        "rabbitmq" or "database" or "websockets" or "event logs" => value is "Healthy" or "Degraded" or "Maintenance" or "Offline",
         _ => false
     };
 }
