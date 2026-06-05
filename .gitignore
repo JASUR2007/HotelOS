@@ -1,0 +1,52 @@
+.vs/
+.idea/
+
+node_modules/
+
+dist/
+build/
+
+temp_extract/
+
+*.user
+*.suo
+
+.env
+**/bin/
+**/obj/
+**/node_modules/
+*.zip
+temp_extract/
+.idea/
+backend/.tools/
+**/bin/
+**/obj/
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider / JetBrains
+.idea/
+
+# Node.js
+**/node_modules/
+
+# Frontend build
+dist/
+build/
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Temp
+temp_extract/
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store

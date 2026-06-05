@@ -1,0 +1,243 @@
+{
+  "ReverseProxy": {
+    "Routes": {
+      "reception-route": {
+        "ClusterId": "reception-cluster",
+        "Match": {
+          "Path": "/api/reception/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "room-route": {
+        "ClusterId": "room-cluster",
+        "Match": {
+          "Path": "/api/room/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "housekeeping-route": {
+        "ClusterId": "housekeeping-cluster",
+        "Match": {
+          "Path": "/api/housekeeping/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "maintenance-route": {
+        "ClusterId": "maintenance-cluster",
+        "Match": {
+          "Path": "/api/maintenance/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "payment-route": {
+        "ClusterId": "payment-cluster",
+        "Match": {
+          "Path": "/api/payments/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "auth-route": {
+        "ClusterId": "user-cluster",
+        "Match": {
+          "Path": "/api/auth/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "admin-users-route": {
+        "ClusterId": "user-cluster",
+        "Match": {
+          "Path": "/api/admin/users/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "admin-roles-route": {
+        "ClusterId": "user-cluster",
+        "Match": {
+          "Path": "/api/admin/roles/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "admin-permissions-route": {
+        "ClusterId": "user-cluster",
+        "Match": {
+          "Path": "/api/admin/permissions/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "admin-assign-route": {
+        "ClusterId": "user-cluster",
+        "Match": {
+          "Path": "/api/admin/assign-role/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "admin-assign-perm-route": {
+        "ClusterId": "user-cluster",
+        "Match": {
+          "Path": "/api/admin/assign-permission/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "user-route": {
+        "ClusterId": "user-cluster",
+        "Match": {
+          "Path": "/api/users/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "notifications-route": {
+        "ClusterId": "websocket-cluster",
+        "Match": {
+          "Path": "/api/notifications/{**catch-all}"
+        },
+        "Transforms": [
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "admin-transactions-route": {
+        "ClusterId": "payment-cluster",
+        "Match": {
+          "Path": "/api/admin/transactions/{**catch-all}"
+        },
+        "Transforms": [
+          { "PathRemovePrefix": "/api/admin/transactions" },
+          { "PathPrefix": "/api/payments/transactions" }
+        ]
+      },
+      "admin-audit-logs-route": {
+        "ClusterId": "gateway-cluster",
+        "Match": {
+          "Path": "/api/admin/audit-logs/{**catch-all}"
+        }
+      },
+      "admin-event-logs-route": {
+        "ClusterId": "gateway-cluster",
+        "Match": {
+          "Path": "/api/admin/event-logs/{**catch-all}"
+        }
+      },
+      "admin-settings-route": {
+        "ClusterId": "gateway-cluster",
+        "Match": {
+          "Path": "/api/admin/settings/{**catch-all}"
+        }
+      },
+      "admin-notifications-route": {
+        "ClusterId": "websocket-cluster",
+        "Match": {
+          "Path": "/api/admin/notifications/{**catch-all}"
+        },
+        "Transforms": [
+          { "PathRemovePrefix": "/api/admin/notifications" },
+          { "PathPrefix": "/api/notifications" }
+        ]
+      },
+      "websocket-route": {
+        "ClusterId": "websocket-cluster",
+        "Match": {
+          "Path": "/hubs/{**catch-all}"
+        },
+        "Transforms": [
+          { "PathRemovePrefix": "/hubs" },
+          { "RequestHeaderOriginalHost": true }
+        ]
+      },
+      "swagger-room-route": {
+        "ClusterId": "room-cluster",
+        "Match": { "Path": "/service-docs/room-service/{**catch-all}" },
+        "Transforms": [ { "PathRemovePrefix": "/service-docs/room-service" } ]
+      },
+      "swagger-reception-route": {
+        "ClusterId": "reception-cluster",
+        "Match": { "Path": "/service-docs/reception-service/{**catch-all}" },
+        "Transforms": [ { "PathRemovePrefix": "/service-docs/reception-service" } ]
+      },
+      "swagger-housekeeping-route": {
+        "ClusterId": "housekeeping-cluster",
+        "Match": { "Path": "/service-docs/housekeeping-service/{**catch-all}" },
+        "Transforms": [ { "PathRemovePrefix": "/service-docs/housekeeping-service" } ]
+      },
+      "swagger-maintenance-route": {
+        "ClusterId": "maintenance-cluster",
+        "Match": { "Path": "/service-docs/maintenance-service/{**catch-all}" },
+        "Transforms": [ { "PathRemovePrefix": "/service-docs/maintenance-service" } ]
+      },
+      "swagger-payment-route": {
+        "ClusterId": "payment-cluster",
+        "Match": { "Path": "/service-docs/payment-service/{**catch-all}" },
+        "Transforms": [ { "PathRemovePrefix": "/service-docs/payment-service" } ]
+      },
+      "swagger-user-route": {
+        "ClusterId": "user-cluster",
+        "Match": { "Path": "/service-docs/user-service/{**catch-all}" },
+        "Transforms": [ { "PathRemovePrefix": "/service-docs/user-service" } ]
+      }
+    },
+    "Clusters": {
+      "reception-cluster": {
+        "Destinations": {
+          "reception-service": { "Address": "http://reception-service:8082/" }
+        }
+      },
+      "room-cluster": {
+        "Destinations": {
+          "room-service": { "Address": "http://room-service:8084/" }
+        }
+      },
+      "housekeeping-cluster": {
+        "Destinations": {
+          "housekeeping-service": { "Address": "http://housekeeping-service:8083/" }
+        }
+      },
+      "maintenance-cluster": {
+        "Destinations": {
+          "maintenance-service": { "Address": "http://maintenance-service:8085/" }
+        }
+      },
+      "payment-cluster": {
+        "Destinations": {
+          "payment-service": { "Address": "http://payment-service:8087/" }
+        }
+      },
+      "user-cluster": {
+        "Destinations": {
+          "user-service": { "Address": "http://user-service:8086/" }
+        }
+      },
+      "websocket-cluster": {
+        "Destinations": {
+          "websocket-service": { "Address": "http://websocket-service:8081/" }
+        }
+      },
+      "gateway-cluster": {
+        "Destinations": {
+          "gateway-api": { "Address": "http://localhost:8080/" }
+        }
+      }
+    }
+  }
+}

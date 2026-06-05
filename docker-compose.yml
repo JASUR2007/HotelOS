@@ -1,0 +1,326 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hotelos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hotelos
+      POSTGRES_PASSWORD: hotelos123
+      POSTGRES_DB: hotelos
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hotelos -d hotelos"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: hotelos-rabbitmq
+    restart: unless-stopped
+    tmpfs:
+      - /var/lib/rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics check_port_connectivity || rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
+
+  database-migrator:
+    image: postgres:16-alpine
+    container_name: hotelos-db-migrator
+    restart: "no"
+    entrypoint: ["/bin/sh", "/init/init.sh"]
+    volumes:
+      - ./docker/database-migrator/init.sh:/init/init.sh:ro
+    environment:
+      PGPASSWORD: hotelos123
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hotelos-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@hotelos.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - '5050:80'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: hotelos-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      gateway-api:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+
+  gateway-api:
+    build:
+      context: ./backend
+      dockerfile: services/gateway-api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+      Frontend__BaseUrl: http://frontend:80
+      Jwt__Issuer: HotelOS
+      Jwt__Audience: HotelOS.Web
+      Jwt__Key: HotelOS_dev_key_change_in_production_1234567890
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8080:8080'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  user-service:
+    build:
+      context: ./backend
+      dockerfile: services/user-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8086
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos_users;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+      Jwt__Issuer: HotelOS
+      Jwt__Audience: HotelOS.Web
+      Jwt__Key: HotelOS_dev_key_change_in_production_1234567890
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8086:8086'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8086/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  reception-service:
+    build:
+      context: ./backend
+      dockerfile: services/reception-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8082
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos_reception;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8082:8082'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8082/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  housekeeping-service:
+    build:
+      context: ./backend
+      dockerfile: services/housekeeping-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8083
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos_housekeeping;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8083:8083'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8083/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  room-service:
+    build:
+      context: ./backend
+      dockerfile: services/room-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8084
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos_room;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+      Storage__ImagesPath: /app/wwwroot
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - room_images:/app/wwwroot/images/uploads
+    ports:
+      - '8084:8084'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8084/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  maintenance-service:
+    build:
+      context: ./backend
+      dockerfile: services/maintenance-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8085
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos_maintenance;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8085:8085'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8085/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  payment-service:
+    build:
+      context: ./backend
+      dockerfile: services/payment-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8087
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos_payments;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
+      Gateway__BaseUrl: http://gateway-api:8080
+      ServiceToken: ${SERVICE_TOKEN:-hotelos-service-token}
+      Jwt__Key: ${JWT_KEY:-HotelOS_dev_key_change_in_production_1234567890}
+      Jwt__Issuer: HotelOS
+      Jwt__Audience: HotelOS.Web
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8087:8087'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8087/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  websocket-service:
+    build:
+      context: ./backend
+      dockerfile: services/websocket-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://+:8081
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=hotelos;Username=hotelos;Password=hotelos123
+      RabbitMQ__HostName: rabbitmq
+      Jwt__Issuer: HotelOS
+      Jwt__Audience: HotelOS.Web
+      Jwt__Key: HotelOS_dev_key_change_in_production_1234567890
+    volumes:
+      - aspnet_keys:/root/.aspnet/DataProtection-Keys
+    depends_on:
+      database-migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8091:8081'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/health >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_HOTEL_API_URL: /api
+    restart: unless-stopped
+    environment:
+      VITE_HOTEL_API_URL: /api
+    depends_on:
+      gateway-api:
+        condition: service_healthy
+      websocket-service:
+        condition: service_healthy
+    volumes:
+      - room_images:/usr/share/nginx/html/images/uploads
+    ports:
+      - '5173:80'
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  postgres_data:
+  aspnet_keys:
+  room_images:
