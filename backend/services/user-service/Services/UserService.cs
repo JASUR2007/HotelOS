@@ -46,7 +46,20 @@ public sealed class UserService(IUserRepository repository, IConfiguration confi
         => await repository.GetAllAsync(cancellationToken);
 
     public async Task<UserDto> CreateUserAsync(CreateUserDto request, CancellationToken cancellationToken = default)
-        => await repository.CreateUserAsync(new RegisterUserDto(request.Email, request.DisplayName, request.Password), cancellationToken);
+    {
+        var userDto = await repository.CreateUserAsync(new RegisterUserDto(request.Email, request.DisplayName, request.Password), cancellationToken);
+        if (!string.IsNullOrEmpty(request.Role))
+        {
+            var roles = await repository.GetAllRolesAsync(cancellationToken);
+            var role = roles.FirstOrDefault(r =>
+                r.Name.Equals(request.Role, StringComparison.OrdinalIgnoreCase));
+            if (role is not null)
+            {
+                await repository.AssignRoleAsync(new RoleAssignmentDto(userDto.Id, role.Id), cancellationToken);
+            }
+        }
+        return userDto;
+    }
 
     public async Task DeleteUserAsync(string id, CancellationToken cancellationToken = default)
         => await repository.DeleteUserAsync(id, cancellationToken);

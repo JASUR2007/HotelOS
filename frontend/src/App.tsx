@@ -33,7 +33,7 @@ function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<ProtectedRoute requiredPermissions={['view_dashboard']} />}>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={[]} />}>
           <Route element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<ProtectedRoute requiredPermissions={['view_dashboard']}><AdminDashboard /></ProtectedRoute>} />
@@ -49,12 +49,12 @@ function App() {
             <Route path="roles" element={<ProtectedRoute requiredPermissions={['manage_roles']}><Roles /></ProtectedRoute>} />
             <Route path="permissions" element={<ProtectedRoute requiredPermissions={['manage_permissions']}><Permissions /></ProtectedRoute>} />
             <Route path="audit-logs" element={<ProtectedRoute requiredPermissions={['view_audit_logs']}><AuditLogs /></ProtectedRoute>} />
-            <Route path="access-denied" element={<AccessDenied />} />
             <Route path="settings" element={<ProtectedRoute requiredPermissions={['view_settings']}><Settings /></ProtectedRoute>} />
             <Route path="settings/infrastructure/rabbitmq" element={<ProtectedRoute requiredPermissions={['view_settings']}><RabbitMQMonitorPage /></ProtectedRoute>} />
             <Route path="settings/infrastructure/database" element={<ProtectedRoute requiredPermissions={['view_settings']}><DatabaseMonitorPage /></ProtectedRoute>} />
             <Route path="settings/infrastructure/websockets" element={<ProtectedRoute requiredPermissions={['view_settings']}><WebsocketConnectionsPage /></ProtectedRoute>} />
             <Route path="settings/infrastructure/event-logs" element={<ProtectedRoute requiredPermissions={['view_settings']}><EventLogs /></ProtectedRoute>} />
+            <Route path="access-denied" element={<ProtectedRoute allowedRoles={[]}><AccessDenied /></ProtectedRoute>} />
           </Route>
         </Route>
 

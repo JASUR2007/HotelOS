@@ -112,10 +112,32 @@ export default function Profile() {
       if (!res.ok) throw new Error('Failed to place order');
       setOrderStatus('Order placed successfully!');
       setOrderRoom('');
+      loadOrders();
     } catch (err) {
       setOrderStatus(err instanceof Error ? err.message : 'Failed');
     }
   }
+
+  const loadOrders = () => {
+    if (activeReservation) {
+      setLoadingO(true);
+      fetch(`${apiBaseUrl}/room/orders`)
+        .then(r => r.ok ? r.json() : [])
+        .then(setOrders)
+        .catch(() => {})
+        .finally(() => setLoadingO(false));
+    }
+  };
+
+  const loadMaintenance = () => {
+    if (activeReservation) {
+      setLoadingM(true);
+      fetchMaintenanceTickets()
+        .then(setMaintenance)
+        .catch(() => {})
+        .finally(() => setLoadingM(false));
+    }
+  };
 
   async function submitMaintenance(e: React.FormEvent) {
     e.preventDefault();
@@ -138,6 +160,7 @@ export default function Profile() {
       setMaintRoom('');
       setMaintTitle('');
       setMaintDesc('');
+      loadMaintenance();
     } catch (err) {
       setMaintStatus(err instanceof Error ? err.message : 'Failed');
     }
@@ -275,8 +298,26 @@ export default function Profile() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">Room Number</label>
-                  <input className="mt-2 w-full border border-primary/10 bg-gray-50 px-4 py-3 outline-none text-primary/60"
-                    value={orderRoom} readOnly />
+                  {reservations.length > 0 ? (
+                    <select
+                      className="mt-2 w-full border border-primary/10 bg-white px-4 py-3 outline-none text-primary focus:border-accent"
+                      value={orderRoom}
+                      onChange={(e) => setOrderRoom(e.target.value)}
+                      required
+                    >
+                      {reservations.map((reservation) => (
+                        <option key={reservation.id} value={reservation.roomNumber}>
+                          {reservation.roomNumber}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      className="mt-2 w-full border border-primary/10 bg-gray-50 px-4 py-3 outline-none text-primary/60"
+                      value={orderRoom}
+                      readOnly
+                    />
+                  )}
                 </div>
                 <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">
                   Item
@@ -331,8 +372,23 @@ export default function Profile() {
             <form onSubmit={submitMaintenance} className="space-y-4">
               <div>
                 <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">Room Number</label>
-                <input className="mt-2 w-full border border-primary/10 bg-gray-50 px-4 py-3 outline-none text-primary/60"
-                  value={maintRoom} readOnly />
+                {reservations.length > 0 ? (
+                  <select
+                    className="mt-2 w-full border border-primary/10 bg-white px-4 py-3 outline-none text-primary focus:border-accent"
+                    value={maintRoom}
+                    onChange={(e) => setMaintRoom(e.target.value)}
+                    required
+                  >
+                    {reservations.map((reservation) => (
+                      <option key={reservation.id} value={reservation.roomNumber}>
+                        {reservation.roomNumber}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input className="mt-2 w-full border border-primary/10 bg-gray-50 px-4 py-3 outline-none text-primary/60"
+                    value={maintRoom} readOnly />
+                )}
               </div>
               <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">
                 Issue Title

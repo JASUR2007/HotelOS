@@ -11,10 +11,10 @@ export default function AccessDenied() {
           Contact your administrator to request access.
         </p>
         <Link
-          to="/admin/dashboard"
+          to="/"
           className="btn btn-primary mx-auto mt-8 inline-flex w-auto px-10"
         >
-          Back to Dashboard
+          Return Home
         </Link>
       </div>
     </section>

@@ -98,11 +98,40 @@ public sealed class ReceptionService(
         var booking = await bookingRepository.GetByIdAsync(request.BookingId, cancellationToken)
             ?? throw new InvalidOperationException("Booking not found");
 
+        var guest = await guestRepository.GetByIdAsync(booking.GuestId, cancellationToken);
+
         var nights = (booking.CheckOutDate.ToDateTime(TimeOnly.MinValue) - booking.CheckInDate.ToDateTime(TimeOnly.MinValue)).Days;
         if (nights <= 0) nights = 1;
 
         booking.Status = "CheckedOut";
         await bookingRepository.SaveChangesAsync(cancellationToken);
+
+        var roomNumber = $"Room {booking.RoomId}";
+        var roomNightsTotal = 150m * nights;
+        var foodOrdersTotal = 0m;
+
+        try
+        {
+            var roomClient = httpClientFactory.CreateClient("room-service");
+            var roomInfo = await roomClient.GetFromJsonAsync<RoomInfo>($"api/room/rooms/{booking.RoomId}", cancellationToken);
+            if (roomInfo is not null)
+            {
+                roomNumber = roomInfo.RoomNumber;
+                roomNightsTotal = roomInfo.PricePerNight * nights;
+            }
+
+            var orders = await roomClient.GetFromJsonAsync<List<OrderInfo>>("api/room/orders", cancellationToken);
+            if (orders is not null)
+            {
+                foodOrdersTotal = orders
+                    .Where(order => string.Equals(order.RoomNumber, roomNumber, StringComparison.OrdinalIgnoreCase))
+                    .Sum(order => order.Total);
+            }
+
+            await roomClient.PatchAsync($"api/room/rooms/{booking.RoomId}/status",
+                JsonContent.Create(new { status = "Dirty" }), cancellationToken);
+        }
+        catch { }
 
         try
         {
@@ -111,10 +140,13 @@ public sealed class ReceptionService(
             await paymentClient.PostAsJsonAsync("api/payments/invoice", new
             {
                 InvoiceNumber = invoiceNumber,
-                GuestName = $"Guest {booking.GuestId}",
-                TotalAmount = nights * 150m,
-                RoomNightsTotal = nights * 150m,
-                FoodOrdersTotal = 0m,
+                GuestName = guest?.FullName ?? $"Guest {booking.GuestId}",
+                RoomNumber = roomNumber,
+                TotalAmount = roomNightsTotal + foodOrdersTotal,
+                RoomNightsTotal = roomNightsTotal,
+                FoodOrdersTotal = foodOrdersTotal,
+                MinibarTotal = 0m,
+                DamagesTotal = 0m,
                 DiscountsTotal = 0m
             }, cancellationToken);
         }
@@ -129,7 +161,7 @@ public sealed class ReceptionService(
 
         auditLogger.Log("Receptionist", "Checked Out", $"Booking #{request.BookingId}", $"Room {booking.RoomId} vacated, {nights} nights");
 
-        return new BookingResponseDto(booking.Id, booking.RoomId, booking.Status, "Guest");
+        return new BookingResponseDto(booking.Id, booking.RoomId, booking.Status, guest?.FullName ?? "Guest");
     }
 
     public async Task<IReadOnlyList<BookingRecordDto>> GetBookingsAsync(CancellationToken cancellationToken = default)
@@ -202,14 +234,74 @@ public sealed class ReceptionService(
 
     public async Task<BookingResponseDto> PatchBookingStatusAsync(int bookingId, string status, CancellationToken cancellationToken = default)
     {
+        if (string.Equals(status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+        {
+            return await CancelBookingAsync(bookingId, cancellationToken);
+        }
+
         await bookingRepository.PatchStatusAsync(bookingId, status, cancellationToken);
         var booking = await bookingRepository.GetByIdAsync(bookingId, cancellationToken)
             ?? throw new InvalidOperationException("Booking not found");
         return new BookingResponseDto(booking.Id, booking.RoomId, booking.Status, $"Guest {booking.GuestId}");
     }
 
+    public async Task<BookingResponseDto> CancelBookingAsync(int bookingId, CancellationToken cancellationToken = default)
+    {
+        var booking = await bookingRepository.GetByIdAsync(bookingId, cancellationToken)
+            ?? throw new InvalidOperationException("Booking not found");
+
+        if (string.Equals(booking.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+        {
+            return new BookingResponseDto(booking.Id, booking.RoomId, booking.Status, $"Guest {booking.GuestId}");
+        }
+
+        var guest = await guestRepository.GetByIdAsync(booking.GuestId, cancellationToken);
+        var nights = CalculateNights(booking.CheckInDate, booking.CheckOutDate);
+        var refundAmount = Math.Max(0m, nights * 150m * 0.5m);
+
+        booking.Status = "Cancelled";
+        await bookingRepository.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            var roomClient = httpClientFactory.CreateClient("room-service");
+            await roomClient.PatchAsync($"api/room/rooms/{booking.RoomId}/status",
+                JsonContent.Create(new { status = "Available" }), cancellationToken);
+        }
+        catch { }
+
+        try
+        {
+            var paymentClient = httpClientFactory.CreateClient("payment-service");
+            await paymentClient.PostAsJsonAsync("api/payments/refund", new
+            {
+                paymentId = booking.Id,
+                amount = refundAmount,
+                reason = "Booking cancelled"
+            }, cancellationToken);
+        }
+        catch { }
+
+        eventPublisher.Publish(RabbitMqRoutingKeys.BookingCancelled, new
+        {
+            BookingId = booking.Id,
+            booking.RoomId,
+            RefundAmount = refundAmount,
+            OccurredAt = DateTimeOffset.UtcNow
+        });
+
+        auditLogger.Log("Receptionist", "Cancelled Booking", $"Booking #{booking.Id}", $"Room {booking.RoomId}, refunded {refundAmount:C}");
+
+        return new BookingResponseDto(booking.Id, booking.RoomId, booking.Status, guest?.FullName ?? $"Guest {booking.GuestId}");
+    }
+
     public async Task<BookingResponseDto> UpdateBookingAsync(int bookingId, UpdateBookingDto request, CancellationToken cancellationToken = default)
     {
+        if (string.Equals(request.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+        {
+            return await CancelBookingAsync(bookingId, cancellationToken);
+        }
+
         var booking = await bookingRepository.GetByIdAsync(bookingId, cancellationToken)
             ?? throw new InvalidOperationException("Booking not found");
         booking.Status = request.Status;
@@ -239,8 +331,17 @@ public sealed class ReceptionService(
     {
         try
         {
+            var preferredType = guestCount switch
+            {
+                1 => "Single",
+                2 => "Double",
+                _ => "Suite"
+            };
+
             var client = httpClientFactory.CreateClient("room-service");
-            var candidates = await client.GetFromJsonAsync<List<RoomCandidate>>("api/room/candidates", cancellationToken);
+            var candidates = await client.GetFromJsonAsync<List<RoomCandidate>>(
+                $"api/room/candidates?guests={guestCount}&preferredType={Uri.EscapeDataString(preferredType)}",
+                cancellationToken);
 
             if (candidates is { Count: > 0 })
             {
@@ -282,4 +383,7 @@ public sealed class ReceptionService(
         var nights = (checkOutDate.ToDateTime(TimeOnly.MinValue) - checkInDate.ToDateTime(TimeOnly.MinValue)).Days;
         return nights <= 0 ? 1 : nights;
     }
+
+    private sealed record RoomInfo(string RoomNumber, decimal PricePerNight);
+    private sealed record OrderInfo(string RoomNumber, decimal Total);
 }

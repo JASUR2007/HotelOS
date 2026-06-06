@@ -11,6 +11,7 @@ const ALL_PERMISSIONS: PermissionName[] = [
   'resolve_maintenance', 'assign_maintenance',
   'view_dashboard', 'view_settings', 'view_maintenances',
   'manage_payments', 'view_reports',
+  'view_audit_logs', 'view_event_logs', 'process_refunds',
 ];
 
 const API = getHotelApiBaseUrl();

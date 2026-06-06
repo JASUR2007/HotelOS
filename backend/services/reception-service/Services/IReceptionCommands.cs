@@ -9,6 +9,7 @@ public interface IReceptionCommands
     Task<GuestDto> CreateGuestAsync(CreateGuestDto request, CancellationToken cancellationToken = default);
     Task<BookingResponseDto> HoldReservationAsync(HoldReservationDto request, CancellationToken cancellationToken = default);
     Task<BookingResponseDto> PatchBookingStatusAsync(int bookingId, string status, CancellationToken cancellationToken = default);
+    Task<BookingResponseDto> CancelBookingAsync(int bookingId, CancellationToken cancellationToken = default);
     Task<BookingResponseDto> UpdateBookingAsync(int bookingId, UpdateBookingDto request, CancellationToken cancellationToken = default);
     Task DeleteBookingAsync(int bookingId, CancellationToken cancellationToken = default);
     Task<GuestDto> UpdateGuestAsync(int guestId, UpdateGuestDto request, CancellationToken cancellationToken = default);

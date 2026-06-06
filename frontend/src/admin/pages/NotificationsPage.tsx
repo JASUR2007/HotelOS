@@ -1,75 +1,33 @@
-import { useEffect, useState } from 'react';
 import GenericListPage from './GenericListPage';
-import { fetchNotifications, getHotelApiBaseUrl } from '../../api';
-
-interface Notification {
-  id: number;
-  title: string;
-  message: string;
-  severity: string;
-  createdAt: string;
-  read: boolean;
-}
+import { useNotificationStore } from '../store/notificationStore';
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchNotifications()
-      .then((data) => {
-        const mapped = (data as any[]).map((n: any) => ({
-          id: n.id ?? 0,
-          title: n.title ?? '',
-          message: n.message ?? '',
-          severity: n.type === 'critical' || n.type === 'maintenance' ? 'critical' :
-                    n.type === 'warning' ? 'warning' : 'info',
-          createdAt: n.createdAt ?? '',
-          read: n.isRead ?? false,
-        }));
-        setNotifications(mapped);
-      })
-      .catch(() => setNotifications([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const notifications = useNotificationStore((s) => s.items);
+  const markRead = useNotificationStore((s) => s.markRead);
 
   const severityColor: Record<string, string> = {
     info: 'bg-blue-100 text-blue-800',
     warning: 'bg-amber-100 text-amber-800',
     critical: 'bg-red-100 text-red-800',
+    success: 'bg-emerald-100 text-emerald-800',
   };
-
-  async function markRead(id: number) {
-    const prev = notifications.find((n) => n.id === id);
-    if (!prev || prev.read) return;
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    try {
-      await fetch(`${getHotelApiBaseUrl()}/notifications/${id}/read`, { method: 'PUT' });
-    } catch {
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: false } : n)));
-    }
-  }
 
   return (
     <GenericListPage title="Notifications" eyebrow="Realtime">
-      {loading ? (
-        <div className="flex justify-center py-10">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-accent border-t-transparent" />
-        </div>
-      ) : notifications.length === 0 ? (
+      {notifications.length === 0 ? (
         <p className="text-sm text-primary/50">No notifications.</p>
       ) : (
         <div className="space-y-3">
           {notifications.map((n) => (
             <div key={n.id} className={`flex items-start gap-4 rounded border border-primary/10 bg-white p-4 shadow-sm ${n.read ? 'opacity-60' : ''}`}>
-              <span className={`mt-0.5 rounded px-2 py-0.5 text-xs font-medium ${severityColor[n.severity] ?? 'bg-gray-100 text-gray-800'}`}>
-                {n.severity}
+              <span className={`mt-0.5 rounded px-2 py-0.5 text-xs font-medium ${severityColor[n.type] ?? 'bg-gray-100 text-gray-800'}`}>
+                {n.type.toUpperCase()}
               </span>
               <div className="flex-1">
                 <h3 className="font-semibold">{n.title}</h3>
                 <p className="mt-1 text-sm text-primary/50">{n.message}</p>
               </div>
-              <span className="text-xs text-primary/40">{n.createdAt}</span>
+              <span className="text-xs text-primary/40">{n.time}</span>
               <button
                 onClick={() => markRead(n.id)}
                 disabled={n.read}

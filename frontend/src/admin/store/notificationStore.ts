@@ -30,19 +30,19 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   items: demoNotifications,
   unreadCount: demoNotifications.filter((n) => !n.read).length,
   addNotification: (item) =>
-    set((s) => ({
-      items: [item, ...s.items].slice(0, 50),
-      unreadCount: s.unreadCount + 1,
-    })),
+    set((s) => {
+      const items = [item, ...s.items].slice(0, 50);
+      return { items, unreadCount: items.filter((n) => !n.read).length };
+    }),
   markRead: (id) =>
     set((s) => {
       const items = s.items.map((n) => (n.id === id ? { ...n, read: true } : n));
       return { items, unreadCount: items.filter((n) => !n.read).length };
     }),
   markAllRead: () =>
-    set((s) => ({
-      items: s.items.map((n) => ({ ...n, read: true })),
-      unreadCount: 0,
-    })),
+    set((s) => {
+      const items = s.items.map((n) => ({ ...n, read: true }));
+      return { items, unreadCount: 0 };
+    }),
   clearAll: () => set({ items: [], unreadCount: 0 }),
 }));

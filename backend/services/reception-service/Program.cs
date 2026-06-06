@@ -60,6 +60,7 @@ builder.Services.AddScoped<IGuestRepository, GuestRepository>();
 builder.Services.AddScoped<IReceptionService, ReceptionService>();
 builder.Services.AddScoped<IReceptionQueries>(p => p.GetRequiredService<IReceptionService>() as ReceptionService ?? throw new InvalidOperationException());
 builder.Services.AddScoped<IReceptionCommands>(p => p.GetRequiredService<IReceptionService>() as ReceptionService ?? throw new InvalidOperationException());
+builder.Services.AddHostedService<ReservationExpirationService>();
 
 var app = builder.Build();
 

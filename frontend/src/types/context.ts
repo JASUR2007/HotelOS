@@ -7,6 +7,7 @@ export interface RoomContextValue {
   setAdults: (value: string) => void;
   kids: string;
   setKids: (value: string) => void;
+  total: number;
   handleCheck: (e: React.FormEvent) => void;
   resetRoomFilterData: () => void;
 }

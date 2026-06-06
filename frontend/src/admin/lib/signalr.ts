@@ -12,9 +12,13 @@ export function hasValidAccessToken() {
   return token.length > 0 && token.startsWith('eyJ');
 }
 
+function normalizeApiBaseUrl(baseUrl: string) {
+  return baseUrl.replace(/\/api\/?$/, '/hubs');
+}
+
 export function createHotelHubConnection() {
   const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
-  const hubUrl = `${apiBaseUrl.replace('/api', '/hubs')}/notifications`;
+  const hubUrl = `${normalizeApiBaseUrl(apiBaseUrl)}/notifications`;
   const options: IHttpConnectionOptions = {
     accessTokenFactory: () => getAccessToken(),
   };

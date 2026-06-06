@@ -22,11 +22,11 @@ export default function ProtectedRoute({ requiredPermissions = [], allowedRoles 
   }
 
   if (allowedRoles.length > 0 && (!user || !allowedRoles.includes(user.role))) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/admin/access-denied" replace state={{ from: location.pathname }} />;
   }
 
   if (requiredPermissions.length > 0 && requiredPermissions.some((p) => !hasPermission(p))) {
-    return <Navigate to="/admin/access-denied" replace />;
+    return <Navigate to="/admin/access-denied" replace state={{ from: location.pathname }} />;
   }
 
   return children ? <>{children}</> : <Outlet />;

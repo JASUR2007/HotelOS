@@ -12,9 +12,10 @@ public sealed record MaintenanceQueueItem(int TicketId, string Title, Maintenanc
 
 public sealed class MaintenancePriorityQueue
 {
-    private readonly PriorityQueue<MaintenanceQueueItem, int> queue = new();
+    private readonly PriorityQueue<MaintenanceQueueItem, (int Priority, long CreatedAtTicks, int TicketId)> queue = new();
 
-    public void Enqueue(MaintenanceQueueItem item) => queue.Enqueue(item, (int)item.Priority);
+    public void Enqueue(MaintenanceQueueItem item)
+        => queue.Enqueue(item, ((int)item.Priority, item.CreatedAt.ToUnixTimeMilliseconds(), item.TicketId));
 
     public bool TryDequeue(out MaintenanceQueueItem? item)
     {

@@ -3,6 +3,7 @@ import { sidebarGroups } from '../sidebar/sidebarItems';
 import { useUiStore } from '../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { useWebsocketStatus } from '../hooks/useWebsocketStatus';
+import type { PermissionName } from '../../types';
 
 function GroupIcon({ icon }: { icon: string }) {
   const icons: Record<string, JSX.Element> = {
@@ -68,12 +69,22 @@ export default function Sidebar() {
   const location = useLocation();
   const userRole = useAuthStore((s) => s.user?.role);
 
+  const userPermissions = useAuthStore((s) => s.user?.permissions ?? ([] as PermissionName[]));
+  const visibleGroups = sidebarGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((it) => {
+        const roleAllowed = !it.roles || (userRole && it.roles.includes(userRole));
+        const permissionAllowed = !it.permissions || it.permissions.every((permission) => userPermissions.includes(permission));
+        return roleAllowed && permissionAllowed;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
+
   const isActiveIn = (items: { path: string }[]) =>
     items.some((i) => location.pathname.startsWith(i.path));
 
-  const defaultOpen = (id: string) => groups[id] ?? isActiveIn(
-    sidebarGroups.find((g) => g.id === id)?.items ?? [],
-  );
+  const defaultOpen = (id: string, items: { path: string }[]) => groups[id] ?? isActiveIn(items);
 
   return (
     <aside className={`flex flex-col border-r border-primary/10 bg-[#1d1b1b] text-white transition-all ${collapsed ? 'w-20' : 'w-72'}`}>
@@ -90,8 +101,8 @@ export default function Sidebar() {
       </div>
 
       <nav className={`flex-1 space-y-1 overflow-y-auto px-3 py-4 ${collapsed ? 'overflow-hidden' : ''}`}>
-        {sidebarGroups.map((group) => {
-          const open = defaultOpen(group.id);
+        {visibleGroups.map((group) => {
+          const open = defaultOpen(group.id, group.items);
           const groupActive = isActiveIn(group.items);
 
           return (

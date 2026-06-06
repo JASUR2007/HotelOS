@@ -1,8 +1,10 @@
+import type { PermissionName, UserRole } from '../../types';
+
 export interface SidebarGroup {
   id: string;
   label: string;
   icon: string;
-  items: { title: string; path: string; roles?: string[] }[];
+  items: { title: string; path: string; roles?: UserRole[]; permissions?: PermissionName[] }[];
 }
 
 export const sidebarGroups: SidebarGroup[] = [
@@ -11,7 +13,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Dashboard',
     icon: 'Zap',
     items: [
-      { title: 'Operations Center', path: '/admin/dashboard', roles: ['SuperAdmin', 'Admin', 'Receptionist', 'Housekeeper', 'Technician', 'KitchenStaff', 'Accountant'] },
+      { title: 'Operations Center', path: '/admin/dashboard', roles: ['SuperAdmin', 'Admin', 'Receptionist', 'Housekeeper', 'Technician', 'KitchenStaff', 'Accountant'], permissions: ['view_dashboard'] },
     ],
   },
   {
@@ -19,10 +21,10 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Hotel Management',
     icon: 'Building',
     items: [
-      { title: 'Rooms', path: '/admin/rooms', roles: ['SuperAdmin', 'Admin', 'Receptionist'] },
-      { title: 'Bookings', path: '/admin/bookings', roles: ['SuperAdmin', 'Admin', 'Receptionist'] },
-      { title: 'Housekeeping', path: '/admin/housekeeping', roles: ['SuperAdmin', 'Admin', 'Housekeeper'] },
-      { title: 'Maintenance', path: '/admin/maintenance', roles: ['SuperAdmin', 'Admin', 'Technician'] },
+      { title: 'Rooms', path: '/admin/rooms', roles: ['SuperAdmin', 'Admin', 'Receptionist'], permissions: ['manage_rooms'] },
+      { title: 'Bookings', path: '/admin/bookings', roles: ['SuperAdmin', 'Admin', 'Receptionist'], permissions: ['create_booking'] },
+      { title: 'Housekeeping', path: '/admin/housekeeping', roles: ['SuperAdmin', 'Admin', 'Housekeeper'], permissions: ['manage_rooms'] },
+      { title: 'Maintenance', path: '/admin/maintenance', roles: ['SuperAdmin', 'Admin', 'Technician'], permissions: ['view_maintenances'] },
     ],
   },
   {
@@ -30,7 +32,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Room Service',
     icon: 'UtensilsCrossed',
     items: [
-      { title: 'Orders', path: '/admin/orders', roles: ['SuperAdmin', 'Admin', 'KitchenStaff'] },
+      { title: 'Orders', path: '/admin/orders', roles: ['SuperAdmin', 'Admin', 'KitchenStaff'], permissions: ['create_orders'] },
     ],
   },
   {
@@ -38,7 +40,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Finance',
     icon: 'CreditCard',
     items: [
-      { title: 'Payments', path: '/admin/payments', roles: ['SuperAdmin', 'Admin', 'Accountant'] },
+      { title: 'Payments', path: '/admin/payments', roles: ['SuperAdmin', 'Admin', 'Accountant'], permissions: ['manage_payments'] },
     ],
   },
   {
@@ -46,10 +48,10 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Access Control',
     icon: 'Shield',
     items: [
-      { title: 'Users', path: '/admin/users', roles: ['SuperAdmin', 'Admin'] },
-      { title: 'Roles', path: '/admin/roles', roles: ['SuperAdmin', 'Admin'] },
-      { title: 'Permissions', path: '/admin/permissions', roles: ['SuperAdmin', 'Admin'] },
-      { title: 'Audit Logs', path: '/admin/audit-logs', roles: ['SuperAdmin', 'Admin'] },
+      { title: 'Users', path: '/admin/users', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_users'] },
+      { title: 'Roles', path: '/admin/roles', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_roles'] },
+      { title: 'Permissions', path: '/admin/permissions', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_permissions'] },
+      { title: 'Audit Logs', path: '/admin/audit-logs', roles: ['SuperAdmin', 'Admin'], permissions: ['view_audit_logs'] },
     ],
   },
   {
@@ -57,7 +59,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'Settings',
     icon: 'Settings',
     items: [
-      { title: 'Settings', path: '/admin/settings', roles: ['SuperAdmin', 'Admin'] },
+      { title: 'Settings', path: '/admin/settings', roles: ['SuperAdmin', 'Admin'], permissions: ['view_settings'] },
     ],
   },
 ];

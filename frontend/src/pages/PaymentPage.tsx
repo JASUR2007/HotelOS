@@ -1,18 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 type PaymentMethod = 'Card' | 'Cash' | 'Online';
+
+const TIMER_MINUTES = 10;
 
 export default function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as {
+    invoiceId?: number;
     bookingId?: number;
     roomId?: number;
     roomNumber?: string;
     guestName?: string;
     total?: number;
     nights?: number;
+    roomNightsTotal?: number;
+    foodOrdersTotal?: number;
+    minibarTotal?: number;
+    damagesTotal?: number;
+    discountsTotal?: number;
   } | null;
 
   const [method, setMethod] = useState<PaymentMethod>('Card');
@@ -21,12 +29,52 @@ export default function PaymentPage() {
   const [cardCvc, setCardCvc] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [timeLeft, setTimeLeft] = useState(TIMER_MINUTES * 60);
 
   const total = state?.total || 0;
+  const invoiceId = state?.invoiceId ?? null;
   const bookingId = state?.bookingId;
+  const roomNightsTotal = state?.roomNightsTotal || 0;
+  const foodOrdersTotal = state?.foodOrdersTotal || 0;
+  const minibarTotal = state?.minibarTotal || 0;
+  const damagesTotal = state?.damagesTotal || 0;
+  const discountsTotal = state?.discountsTotal || 0;
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const isExpired = timeLeft <= 0;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isExpired) {
+      setError('Payment time has expired. Please start a new booking.');
+      return;
+    }
+
+    if (!invoiceId) {
+      setError('We could not find your invoice. Please return to checkout and try again.');
+      return;
+    }
+
+    if (method === 'Card' && (!cardNumber.trim() || !cardExpiry.trim() || !cardCvc.trim())) {
+      setError('Please complete all card fields before submitting payment.');
+      return;
+    }
+
     setError('');
     setStatus('');
 
@@ -36,9 +84,12 @@ export default function PaymentPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          invoiceId: bookingId ?? 1,
+          invoiceId,
           amount: total,
           method,
+          cardNumber: method === 'Card' ? cardNumber.trim() : undefined,
+          cardExpiry: method === 'Card' ? cardExpiry.trim() : undefined,
+          cardCvc: method === 'Card' ? cardCvc.trim() : undefined,
         }),
       });
 
@@ -64,6 +115,16 @@ export default function PaymentPage() {
         </p>
       </div>
 
+      <div className={`border p-6 mb-6 text-center shadow-sm ${isExpired ? 'border-red-300 bg-red-50' : 'border-amber-200 bg-amber-50'}`}>
+        <p className="text-xs uppercase tracking-[0.35em] text-accent mb-1">Payment Timer</p>
+        {isExpired ? (
+          <p className="text-lg font-bold text-red-600">Time Expired</p>
+        ) : (
+          <p className="text-2xl font-bold text-amber-700">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</p>
+        )}
+        <p className="text-xs text-primary/50 mt-1">Your room is held for {TIMER_MINUTES} minutes while you complete payment.</p>
+      </div>
+
       {state && (
         <div className="border border-primary/10 bg-white p-6 mb-6 shadow-sm">
           <h3 className="font-semibold mb-3">Booking Summary</h3>
@@ -80,6 +141,42 @@ export default function PaymentPage() {
               <span className="text-primary/50">Nights</span>
               <span>{state.nights}</span>
             </div>
+            {roomNightsTotal > 0 && (
+              <>
+                <div className="pt-2 border-t border-primary/10 space-y-2">
+                  {roomNightsTotal > 0 && (
+                    <div className="flex justify-between text-xs text-primary/40">
+                      <span>Room nights</span>
+                      <span>${roomNightsTotal.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {foodOrdersTotal > 0 && (
+                    <div className="flex justify-between text-xs text-primary/40">
+                      <span>Food & beverages</span>
+                      <span>${foodOrdersTotal.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {minibarTotal > 0 && (
+                    <div className="flex justify-between text-xs text-primary/40">
+                      <span>Minibar</span>
+                      <span>${minibarTotal.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {damagesTotal > 0 && (
+                    <div className="flex justify-between text-xs text-primary/40">
+                      <span>Damages</span>
+                      <span>${damagesTotal.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {discountsTotal > 0 && (
+                    <div className="flex justify-between text-xs text-primary/40">
+                      <span>Discounts</span>
+                      <span>-${discountsTotal.toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
             <div className="flex justify-between font-bold text-base pt-2 border-t border-primary/10">
               <span>Total</span>
               <span>${total.toLocaleString()}</span>

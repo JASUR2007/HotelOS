@@ -15,6 +15,6 @@ public interface IRoomService
     Task DeleteRoomAsync(int id, CancellationToken cancellationToken = default);
     Task DeleteOrderAsync(int id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<RoomOverviewDto>> GetRoomsOverviewAsync(CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<RoomCandidate>> GetAvailableRoomCandidatesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<RoomCandidate>> GetAvailableRoomCandidatesAsync(int guests = 0, string? preferredRoomType = null, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<AmenityDto>> GetAmenitiesAsync(CancellationToken cancellationToken = default);
 }

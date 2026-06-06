@@ -48,4 +48,13 @@ public sealed class TS04_BillingCalculationServiceTests
         Assert.Equal(0, result.GrossTotal);
         Assert.Equal(0, result.NetTotal);
     }
+
+    [Fact]
+    public void Calculate_Includes_Minibar_And_Damages_In_GrossTotal()
+    {
+        var result = _service.Calculate(new BillingInput(200, 40, 20, 35, 0));
+
+        Assert.Equal(295, result.GrossTotal);
+        Assert.Equal(295, result.NetTotal);
+    }
 }

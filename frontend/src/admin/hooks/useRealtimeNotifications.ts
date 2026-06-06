@@ -60,7 +60,15 @@ export function useRealtimeNotifications() {
       return;
     }
 
-    connection.start().catch(() => undefined);
+    connection.start().catch((error) => {
+      console.error('[SignalR] Connection failed', error);
+    });
+
+    connection.onclose((error) => {
+      if (error) {
+        console.error('[SignalR] Connection closed with error', error);
+      }
+    });
 
     return () => {
       connection.stop().catch(() => undefined);

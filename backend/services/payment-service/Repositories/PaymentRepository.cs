@@ -26,6 +26,9 @@ public sealed class PaymentRepository(PaymentDbContext context) : IPaymentReposi
     public async Task<IReadOnlyList<Payment>> GetPaymentsAsync(CancellationToken cancellationToken = default)
         => await context.Payments.AsNoTracking().ToListAsync(cancellationToken);
 
+    public async Task<Invoice?> GetInvoiceByIdAsync(int invoiceId, CancellationToken cancellationToken = default)
+        => await context.Invoices.AsNoTracking().FirstOrDefaultAsync(invoice => invoice.Id == invoiceId, cancellationToken);
+
     public async Task<IReadOnlyList<(Payment Payment, Invoice Invoice)>> GetPaymentsWithInvoicesAsync(CancellationToken cancellationToken = default)
         => await (from payment in context.Payments.AsNoTracking()
                   join invoice in context.Invoices.AsNoTracking() on payment.InvoiceId equals invoice.Id

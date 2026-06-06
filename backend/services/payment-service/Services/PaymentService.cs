@@ -10,7 +10,8 @@ namespace HotelOS.PaymentService.Services;
 public sealed class PaymentService(
     IPaymentRepository repository,
     IEventPublisher eventPublisher,
-    BillingCalculationService billingService) : IPaymentService, IPaymentQueries, IPaymentCommands
+    BillingCalculationService billingService,
+    ILogger<PaymentService> logger) : IPaymentService, IPaymentQueries, IPaymentCommands
 {
     public async Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(CancellationToken cancellationToken = default)
         => (await repository.GetInvoicesAsync(cancellationToken))
@@ -33,7 +34,11 @@ public sealed class PaymentService(
     public async Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceDto request, CancellationToken cancellationToken = default)
     {
         var billingResult = billingService.Calculate(new BillingInput(
-            request.RoomNightsTotal, request.FoodOrdersTotal, 0, 0, request.DiscountsTotal));
+            request.RoomNightsTotal,
+            request.FoodOrdersTotal,
+            request.MinibarTotal,
+            request.DamagesTotal,
+            request.DiscountsTotal));
 
         var invoice = await repository.CreateInvoiceAsync(new Invoice
         {
@@ -44,15 +49,22 @@ public sealed class PaymentService(
             Status = "Open"
         }, cancellationToken);
 
-        eventPublisher.Publish("invoice.generated", new
+        try
         {
-            invoice.Id,
-            invoice.InvoiceNumber,
-            invoice.GuestName,
-            billingResult.GrossTotal,
-            billingResult.NetTotal,
-            OccurredAt = DateTimeOffset.UtcNow
-        });
+            eventPublisher.Publish("invoice.generated", new
+            {
+                invoice.Id,
+                invoice.InvoiceNumber,
+                invoice.GuestName,
+                billingResult.GrossTotal,
+                billingResult.NetTotal,
+                OccurredAt = DateTimeOffset.UtcNow
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to publish invoice.generated event for invoice {InvoiceId}", invoice.Id);
+        }
 
         _ = new InvoiceGeneratedEvent(invoice.Id, invoice.InvoiceNumber, DateTimeOffset.UtcNow);
         return new InvoiceDto(invoice.Id, invoice.InvoiceNumber, invoice.GuestName, invoice.RoomNumber, invoice.TotalAmount, invoice.Status);
@@ -60,6 +72,12 @@ public sealed class PaymentService(
 
     public async Task<PaymentDto> ProcessPaymentAsync(ProcessPaymentDto request, CancellationToken cancellationToken = default)
     {
+        var invoice = await repository.GetInvoiceByIdAsync(request.InvoiceId, cancellationToken);
+        if (invoice is null)
+        {
+            throw new ArgumentException($"Invoice with ID {request.InvoiceId} does not exist.");
+        }
+
         var payment = await repository.CreatePaymentAsync(new Payment
         {
             InvoiceId = request.InvoiceId,
@@ -69,14 +87,21 @@ public sealed class PaymentService(
             ProcessedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
 
-        eventPublisher.Publish(RabbitMqRoutingKeys.PaymentCompleted, new
+        try
         {
-            payment.Id,
-            payment.InvoiceId,
-            payment.Amount,
-            payment.Method,
-            OccurredAt = DateTimeOffset.UtcNow
-        });
+            eventPublisher.Publish(RabbitMqRoutingKeys.PaymentCompleted, new
+            {
+                payment.Id,
+                payment.InvoiceId,
+                payment.Amount,
+                payment.Method,
+                OccurredAt = DateTimeOffset.UtcNow
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to publish PaymentCompleted event for payment {PaymentId}", payment.Id);
+        }
 
         return new PaymentDto(payment.Id, payment.InvoiceId, string.Empty, string.Empty, string.Empty, payment.Amount, payment.Method, payment.Status);
     }
@@ -92,14 +117,21 @@ public sealed class PaymentService(
             ProcessedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
 
-        eventPublisher.Publish(RabbitMqRoutingKeys.PaymentRefunded, new
+        try
         {
-            payment.Id,
-            request.PaymentId,
-            request.Amount,
-            request.Reason,
-            OccurredAt = DateTimeOffset.UtcNow
-        });
+            eventPublisher.Publish(RabbitMqRoutingKeys.PaymentRefunded, new
+            {
+                payment.Id,
+                request.PaymentId,
+                request.Amount,
+                request.Reason,
+                OccurredAt = DateTimeOffset.UtcNow
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to publish PaymentRefunded event for payment {PaymentId}", payment.Id);
+        }
 
         _ = new RefundProcessedEvent(payment.Id, request.Reason, DateTimeOffset.UtcNow);
         return new PaymentDto(payment.Id, payment.InvoiceId, string.Empty, string.Empty, string.Empty, payment.Amount, payment.Method, payment.Status);

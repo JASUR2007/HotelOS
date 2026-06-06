@@ -13,7 +13,7 @@ function getAccessToken(): string {
   return store?.getState().accessToken ?? '';
 }
 
-const BOOKING_STATUSES = ['Booked', 'CheckedIn', 'CheckedOut'];
+const BOOKING_STATUSES = ['Booked', 'CheckedIn', 'CheckedOut', 'Cancelled'];
 
 interface EditForm {
   guestName: string;
@@ -143,6 +143,26 @@ export default function Bookings() {
       setError('Failed to update booking.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleCancel(target: BookingRecord) {
+    if (!window.confirm(`Cancel booking #${target.id} for ${target.guestName}? This will refund 50% cash.`)) {
+      return;
+    }
+
+    setError(null);
+    try {
+      const token = getAccessToken();
+      const response = await fetch(`${baseUrl}/reception/bookings/${target.id}/cancel`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) throw new Error('Failed to cancel booking');
+      showSuccess(`Booking #${target.id} cancelled and refunded.`);
+      await load();
+    } catch {
+      setError('Failed to cancel booking.');
     }
   }
 
@@ -304,12 +324,20 @@ export default function Bookings() {
         loading={loading}
         actions={(row) => (
           <>
-            {row.status !== 'CheckedOut' && (
+            {row.status !== 'CheckedOut' && row.status !== 'Cancelled' && (
               <button
                 onClick={() => setShowCheckOut(row)}
                 className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50"
               >
                 Check Out
+              </button>
+            )}
+            {row.status !== 'CheckedOut' && row.status !== 'Cancelled' && (
+              <button
+                onClick={() => handleCancel(row)}
+                className="rounded-lg border border-amber-200 px-3 py-1.5 text-xs text-amber-600 hover:bg-amber-50"
+              >
+                Cancel
               </button>
             )}
             <button

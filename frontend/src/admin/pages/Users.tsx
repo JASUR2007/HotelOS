@@ -9,8 +9,9 @@ const ROLE_NAME_TO_ID: Record<string, number> = {
   Admin: 2,
   Receptionist: 3,
   Housekeeper: 4,
-  Maintenance: 5,
+  Technician: 5,
   KitchenStaff: 6,
+  Accountant: 8,
   Guest: 7,
 };
 

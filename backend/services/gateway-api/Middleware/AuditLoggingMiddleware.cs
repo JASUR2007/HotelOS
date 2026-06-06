@@ -12,6 +12,7 @@ public sealed class AuditLoggingMiddleware(RequestDelegate next)
         var path = context.Request.Path.Value ?? string.Empty;
         var method = context.Request.Method;
 
+        var isRoomMutation = path.Contains("/room/rooms", StringComparison.OrdinalIgnoreCase) && method != "GET";
         var shouldLog =
             path.Contains("/auth/login", StringComparison.OrdinalIgnoreCase) ||
             path.Contains("/auth/logout", StringComparison.OrdinalIgnoreCase) ||
@@ -24,7 +25,7 @@ public sealed class AuditLoggingMiddleware(RequestDelegate next)
             path.Contains("/reception/check-out", StringComparison.OrdinalIgnoreCase) ||
             path.Contains("/reception/hold", StringComparison.OrdinalIgnoreCase) ||
             path.Contains("/room/orders", StringComparison.OrdinalIgnoreCase) ||
-            path.Contains("/room/rooms", StringComparison.OrdinalIgnoreCase) && method != "GET" ||
+            isRoomMutation ||
             path.Contains("/maintenance", StringComparison.OrdinalIgnoreCase) ||
             path.Contains("/housekeeping", StringComparison.OrdinalIgnoreCase);
 

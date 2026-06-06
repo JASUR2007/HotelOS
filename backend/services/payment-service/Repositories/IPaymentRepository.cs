@@ -8,5 +8,6 @@ public interface IPaymentRepository
     Task<Payment> CreatePaymentAsync(Payment payment, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Invoice>> GetInvoicesAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Payment>> GetPaymentsAsync(CancellationToken cancellationToken = default);
+    Task<Invoice?> GetInvoiceByIdAsync(int invoiceId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<(Payment Payment, Invoice Invoice)>> GetPaymentsWithInvoicesAsync(CancellationToken cancellationToken = default);
 }

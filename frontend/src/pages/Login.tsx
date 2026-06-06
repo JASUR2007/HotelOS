@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function Login() {
@@ -56,6 +56,10 @@ export default function Login() {
 				{error ? <p className="mt-4 text-center text-sm text-red-600">{error}</p> : null}
 				{status ? <p className="mt-4 text-center text-sm text-emerald-700">{status}</p> : null}
 			</form>
+			<p className="mt-6 text-center text-sm text-primary/50">
+				No account?{' '}
+				<Link to="/register" className="text-accent hover:underline">Register</Link>
+			</p>
 		</section>
 	);
 }

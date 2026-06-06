@@ -29,7 +29,7 @@ import type {
 
 const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
 
-function getAuthHeaders(): Record<string, string> {
+export function getAuthHeaders(): Record<string, string> {
 	const store = (window as unknown as Record<string, unknown>).__hotelos_auth_store__ as
 		| { getState(): { accessToken?: string } }
 		| undefined;
@@ -304,11 +304,23 @@ export function fetchTransactions() {
 	]);
 }
 
-export function fetchAuditLogRecords() {
-	return fetchJson<AuditLogRecord[]>('/admin/audit-logs', [
-		{ id: 1, actor: 'Admin', action: 'Created payment', entity: 'Invoice INV-10021', createdAt: '09:12' },
-		{ id: 2, actor: 'Receptionist', action: 'Assigned room', entity: 'Booking #1042', createdAt: '08:58' },
-	]);
+export async function fetchAuditLogRecords(): Promise<AuditLogRecord[]> {
+	try {
+		const res = await fetch(`${apiBaseUrl}/admin/audit-logs`, {
+			headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		});
+		if (!res.ok) return [];
+		const data: any[] = await res.json();
+		return data.map((item) => ({
+			id: item.id,
+			actor: item.userName ?? '',
+			action: item.action ?? '',
+			entity: item.entityType && item.entityId ? `${item.entityType} #${item.entityId}` : (item.entityType ?? ''),
+			createdAt: item.createdAt ?? '',
+		}));
+	} catch {
+		return [];
+	}
 }
 
 export function fetchEventLogRecords() {

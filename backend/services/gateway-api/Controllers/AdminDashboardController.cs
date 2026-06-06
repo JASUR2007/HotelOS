@@ -6,7 +6,6 @@ namespace HotelOS.GatewayApi.Controllers;
 [Route("api/admin/dashboard")]
 public sealed class AdminDashboardController(IHttpClientFactory httpClientFactory) : ControllerBase
 {
-    /// <summary>Admin dashboard metrics: occupancy, bookings, revenue, notifications.</summary>
     [HttpGet("metrics")]
     public async Task<IActionResult> GetMetrics(CancellationToken cancellationToken)
     {
@@ -35,7 +34,6 @@ public sealed class AdminDashboardController(IHttpClientFactory httpClientFactor
         return Ok(metrics);
     }
 
-    /// <summary>Room occupancy breakdown (occupied, available, other) for charting.</summary>
     [HttpGet("occupancy")]
     public async Task<IActionResult> GetOccupancy(CancellationToken cancellationToken)
     {
@@ -59,21 +57,18 @@ public sealed class AdminDashboardController(IHttpClientFactory httpClientFactor
         }
     }
 
-    /// <summary>Revenue data for admin charting (stub).</summary>
     [HttpGet("revenue")]
     public async Task<IActionResult> GetRevenue(CancellationToken cancellationToken)
     {
         return Ok(Array.Empty<object>());
     }
 
-    /// <summary>Payment statistics for admin dashboard (stub).</summary>
     [HttpGet("payments")]
     public async Task<IActionResult> GetPaymentStats(CancellationToken cancellationToken)
     {
         return Ok(Array.Empty<object>());
     }
 
-    /// <summary>Returns payment analytics data for admin dashboard (stub).</summary>
     [HttpGet("payment-analytics")]
     public async Task<IActionResult> GetPaymentAnalytics(CancellationToken cancellationToken)
     {

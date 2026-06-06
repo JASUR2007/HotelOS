@@ -68,16 +68,46 @@ export default function Checkout() {
         throw new Error(body?.message ?? 'Booking failed');
       }
 
-      const data = await res.json();
-      setStatus('Booking confirmed! Redirecting to payment...');
+      const bookingData = await res.json();
+      setStatus('Booking confirmed! Creating invoice...');
+
+      const invoiceRes = await fetch(`${apiBaseUrl}/payments/invoice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceNumber: `INV-${new Date().toISOString().split('T')[0]}-${bookingData.bookingId.toString().padStart(4, '0')}`,
+          guestName: guestName || user.displayName,
+          roomNumber: roomNumber,
+          totalAmount: grandTotal,
+          roomNightsTotal: roomTotal,
+          foodOrdersTotal: 0,
+          minibarTotal: 0,
+          damagesTotal: 0,
+          discountsTotal: 0,
+        }),
+      });
+
+      if (!invoiceRes.ok) {
+        const body = await invoiceRes.json().catch(() => null);
+        throw new Error(body?.message ?? 'Invoice creation failed');
+      }
+
+      const invoiceData = await invoiceRes.json();
+      setStatus('Invoice created! Redirecting to payment...');
       setTimeout(() => navigate('/payment', {
         state: {
-          bookingId: data.bookingId,
-          roomId: data.roomId,
+          invoiceId: invoiceData.id,
+          bookingId: bookingData.bookingId,
+          roomId: bookingData.roomId,
           roomNumber: roomNumber,
           guestName: guestName || user.displayName,
           total: grandTotal,
           nights,
+          roomNightsTotal: roomTotal,
+          foodOrdersTotal: 0,
+          minibarTotal: 0,
+          damagesTotal: 0,
+          discountsTotal: 0,
         },
       }), 1500);
     } catch (err) {

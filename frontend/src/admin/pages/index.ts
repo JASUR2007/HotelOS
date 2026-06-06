@@ -21,7 +21,7 @@ export { default as WebsocketConnectionsPage } from './WebsocketConnectionsPage'
 export { default as ActivityFeedPage } from './ActivityFeedPage';
 export { default as SystemHealthPage } from './SystemHealthPage';
 export { default as HousekeepingPage } from './HousekeepingPage';
+export { default as AccessDenied } from './AccessDenied';
 export { default as InvoicesPage } from './InvoicesPage';
 export { default as RabbitMQMonitorPage } from './RabbitMQMonitorPage';
 export { default as DatabaseMonitorPage } from './DatabaseMonitorPage';
-export { default as AccessDenied } from './AccessDenied';

@@ -1,11 +1,13 @@
 using HotelOS.WebsocketService.DTOs;
 using HotelOS.WebsocketService.Repositories;
 using HotelOS.WebsocketService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelOS.WebsocketService.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public sealed class NotificationsController(
     INotificationRepository repository,

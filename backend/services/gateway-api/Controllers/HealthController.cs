@@ -7,7 +7,6 @@ namespace HotelOS.GatewayApi.Controllers;
 [Route("api/[controller]")]
 public sealed class HealthController(IGatewayRepository repository) : ControllerBase
 {
-    /// <summary>Health status of the gateway and downstream services.</summary>
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {

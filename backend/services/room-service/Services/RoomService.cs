@@ -142,17 +142,33 @@ public sealed class RoomService(IRoomRepository roomRepository, IOrderRepository
         return amenities.Select(a => new AmenityDto(a.Id, a.Name, a.IconUrl, a.Description)).ToList();
     }
 
-    public async Task<IReadOnlyList<RoomCandidate>> GetAvailableRoomCandidatesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<RoomCandidate>> GetAvailableRoomCandidatesAsync(int guests = 0, string? preferredRoomType = null, CancellationToken cancellationToken = default)
     {
         var rooms = await roomRepository.GetAllAsync(cancellationToken);
-        return rooms.Select(r => new RoomCandidate(
-            r.Id,
-            r.RoomNumber,
-            r.Status == "Available",
-            r.Floor,
-            Math.Abs(r.Floor - 1),
-            1,
-            false
-        )).ToList();
+        preferredRoomType = string.IsNullOrWhiteSpace(preferredRoomType) ? null : preferredRoomType.Trim();
+
+        return rooms
+            .Where(r => r.Status == "Available" && (guests <= 0 || r.GuestCapacity >= guests))
+            .Select(r => new RoomCandidate(
+                r.Id,
+                r.RoomNumber,
+                true,
+                r.Floor,
+                Math.Abs(r.Floor - 1),
+                GetRoomTypePriority(r.Type),
+                preferredRoomType is not null && string.Equals(r.Type.ToString(), preferredRoomType, StringComparison.OrdinalIgnoreCase),
+                r.Type.ToString(),
+                r.GuestCapacity
+            ))
+            .ToList();
     }
+
+    private static int GetRoomTypePriority(RoomType type) => type switch
+    {
+        RoomType.Suite => 4,
+        RoomType.Accessible => 3,
+        RoomType.Double => 2,
+        RoomType.Single => 1,
+        _ => 0
+    };
 }

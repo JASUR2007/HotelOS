@@ -45,6 +45,7 @@ export function RoomContext({ children }: { children: ReactNode }) {
     setAdults,
     kids,
     setKids,
+    total,
     handleCheck,
     resetRoomFilterData,
   };

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { fetchPaymentAnalytics, fetchPaymentStats, fetchTransactions } from '../../api';
-import type { PaymentAnalyticsPoint, PaymentStats, TransactionRecord } from '../../types';
+import { fetchTransactions } from '../../api';
+import type { TransactionRecord } from '../../types';
 import StatusBadge from '../components/StatusBadge';
 
-type Tab = 'overview' | 'invoices' | 'transactions';
+type Tab = 'invoices' | 'transactions';
 
 interface Invoice {
   id: number;
@@ -16,9 +16,7 @@ interface Invoice {
 }
 
 export default function Payments() {
-  const [tab, setTab] = useState<Tab>('overview');
-  const [stats, setStats] = useState<PaymentStats[]>([]);
-  const [analytics, setAnalytics] = useState<PaymentAnalyticsPoint[]>([]);
+  const [tab, setTab] = useState<Tab>('invoices');
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +24,6 @@ export default function Payments() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetchPaymentStats().then(setStats).catch(() => []),
-      fetchPaymentAnalytics().then(setAnalytics).catch(() => []),
       fetchTransactions().then(setTransactions).catch(() => []),
       (async () => {
         const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
@@ -38,7 +34,6 @@ export default function Payments() {
   }, []);
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'overview', label: 'Overview' },
     { key: 'invoices', label: `Invoices (${invoices.length})` },
     { key: 'transactions', label: `Transactions (${transactions.length})` },
   ];
@@ -70,28 +65,6 @@ export default function Payments() {
         </div>
       ) : (
         <>
-          {tab === 'overview' && (
-            <>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {stats.map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
-                    <p className="text-xs uppercase tracking-[0.28em] text-primary/40">{item.label}</p>
-                    <div className="mt-2 text-3xl font-primary text-primary">{item.value}</div>
-                    <p className="mt-2 text-sm text-primary/65">{item.delta}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 grid gap-4 md:grid-cols-4">
-                {analytics.map((point) => (
-                  <div key={point.label} className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
-                    <p className="text-xs uppercase tracking-[0.28em] text-primary/40">{point.label}</p>
-                    <div className="mt-2 text-2xl font-primary text-primary">{point.value}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
           {tab === 'invoices' && (
             invoices.length === 0 ? (
               <p className="text-sm text-primary/50">No invoices found.</p>

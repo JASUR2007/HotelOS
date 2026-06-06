@@ -9,7 +9,6 @@ namespace HotelOS.GatewayApi.Controllers;
 [RequiresPermission("view_dashboard")]
 public sealed class DashboardController(IGatewayService service) : ControllerBase
 {
-    /// <summary>Main hotel dashboard summary with key operational metrics.</summary>
     [HttpGet("summary")]
     public async Task<IActionResult> Summary(CancellationToken cancellationToken)
         => Ok(await service.GetDashboardSummaryAsync(cancellationToken));
