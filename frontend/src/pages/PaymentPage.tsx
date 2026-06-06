@@ -21,6 +21,7 @@ export default function PaymentPage() {
     minibarTotal?: number;
     damagesTotal?: number;
     discountsTotal?: number;
+    expiresAt?: number;
   } | null;
 
   const [method, setMethod] = useState<PaymentMethod>('Card');
@@ -30,7 +31,8 @@ export default function PaymentPage() {
   const [expiryError, setExpiryError] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(TIMER_MINUTES * 60);
+  const [expiresAt] = useState(() => state?.expiresAt ?? Date.now() + TIMER_MINUTES * 60 * 1000);
+  const [timeLeft, setTimeLeft] = useState(() => Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)));
 
   const total = state?.total || 0;
 
@@ -81,18 +83,31 @@ export default function PaymentPage() {
   const discountsTotal = state?.discountsTotal || 0;
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
+    const updateTimeLeft = () => {
+      const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      return remaining;
+    };
+
+    updateTimeLeft();
+
+    const displayTimer = setInterval(() => {
+      updateTimeLeft();
     }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+
+    const scheduler = setInterval(() => {
+      if (Date.now() >= expiresAt) {
+        setTimeLeft(0);
+        setError('Payment time has expired. Please start a new booking.');
+        clearInterval(scheduler);
+      }
+    }, 60000);
+
+    return () => {
+      clearInterval(displayTimer);
+      clearInterval(scheduler);
+    };
+  }, [expiresAt]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;

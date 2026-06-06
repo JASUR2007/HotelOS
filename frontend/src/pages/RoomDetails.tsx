@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { ScrollToTop } from '../components';
-
-import type { ApiRoom } from '../types';
-import { fetchRoomById } from '../api';
+import type { ApiRoom, BookingRecord } from '../types';
+import { fetchRoomById, fetchBookingsAdmin } from '../api';
 
 function AmenityIcon({ name }: { name: string }) {
   const svg = AMENITY_SVG[name];
@@ -32,20 +33,46 @@ export default function RoomDetails() {
   const [room, setRoom] = useState<ApiRoom | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
+  const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
+  const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [guests, setGuests] = useState(1);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      fetchRoomById(Number(id))
-        .then(setRoom)
-        .catch(() => setError('Failed to load room details'))
-        .finally(() => setLoading(false));
-    }
+    if (!id) return;
+
+    setLoading(true);
+    Promise.all([fetchRoomById(Number(id)), fetchBookingsAdmin()])
+      .then(([roomData, allBookings]) => {
+        setRoom(roomData);
+        setBookings(allBookings.filter((booking) => booking.roomNumber === roomData.roomNumber && booking.status !== 'Cancelled' && booking.status !== 'CheckedOut'));
+      })
+      .catch(() => setError('Failed to load room details'))
+      .finally(() => setLoading(false));
   }, [id]);
+
+  const blockedIntervals = useMemo(
+    () => bookings
+      .map((booking) => ({
+        start: new Date(`${booking.checkInDate}T00:00:00`),
+        end: new Date(`${booking.checkOutDate}T00:00:00`),
+      }))
+      .filter((interval) => !Number.isNaN(interval.start.getTime()) && !Number.isNaN(interval.end.getTime())),
+    [bookings],
+  );
+
+  const isDateBlocked = (date: Date) =>
+    blockedIntervals.some((interval) => date >= interval.start && date < interval.end);
+
+  const hasDateConflict = useMemo(() => {
+    if (!checkInDate || !checkOutDate) return false;
+    return bookings.some((booking) => {
+      const bookingStart = new Date(`${booking.checkInDate}T00:00:00`);
+      const bookingEnd = new Date(`${booking.checkOutDate}T00:00:00`);
+      return bookingStart < checkOutDate && bookingEnd > checkInDate;
+    });
+  }, [bookings, checkInDate, checkOutDate]);
 
   if (loading) {
     return (
@@ -74,10 +101,8 @@ export default function RoomDetails() {
   }
 
   const nights = (() => {
-    if (!checkIn || !checkOut) return 0;
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    if (!checkInDate || !checkOutDate) return 0;
+    const diff = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
     return diff > 0 ? diff : 0;
   })();
 
@@ -88,22 +113,37 @@ export default function RoomDetails() {
   const allImages = room.images?.length ? room.images : [room.mainImage];
 
   const handleBook = async () => {
-    if (!checkIn || !checkOut) {
+    if (!checkInDate || !checkOutDate) {
       setError('Please select check-in and check-out dates');
       return;
     }
+
+    if (hasDateConflict) {
+      setError('Selected dates overlap an existing booking for this room. Please choose different dates.');
+      return;
+    }
+
     setError('');
+    const checkIn = checkInDate.toISOString().slice(0, 10);
+    const checkOut = checkOutDate.toISOString().slice(0, 10);
+
     try {
       const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
       await fetch(`${apiBaseUrl}/reception/hold`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          roomId: room.id, roomNumber: room.roomNumber,
-          checkInDate: checkIn, checkOutDate: checkOut, guestsCount: guests,
+          roomId: room.id,
+          roomNumber: room.roomNumber,
+          checkInDate: checkIn,
+          checkOutDate: checkOut,
+          guestsCount: guests,
         }),
       });
-    } catch { /* hold is best-effort */ }
+    } catch {
+      /* hold is best-effort */
+    }
+
     navigate('/checkout', {
       state: {
         roomId: room.id,
@@ -193,25 +233,51 @@ export default function RoomDetails() {
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
                     <span className="text-xs uppercase tracking-wider text-primary/50">Check In</span>
-                    <input
-                      type="date"
-                      min={new Date().toISOString().split('T')[0]}
+                    <DatePicker
+                      selected={checkInDate}
+                      onChange={(date) => {
+                        setCheckInDate(date);
+                        setError('');
+                      }}
+                      selectsStart
+                      startDate={checkInDate}
+                      endDate={checkOutDate}
+                      minDate={new Date()}
+                      filterDate={(date) => !isDateBlocked(date)}
+                      placeholderText="Check in"
                       className="mt-1 w-full border border-primary/10 px-3 py-2.5 text-sm outline-none focus:border-accent"
-                      value={checkIn}
-                      onChange={(e) => setCheckIn(e.target.value)}
                     />
                   </label>
                   <label className="block">
                     <span className="text-xs uppercase tracking-wider text-primary/50">Check Out</span>
-                    <input
-                      type="date"
-                      min={checkIn || new Date().toISOString().split('T')[0]}
+                    <DatePicker
+                      selected={checkOutDate}
+                      onChange={(date) => {
+                        setCheckOutDate(date);
+                        setError('');
+                      }}
+                      selectsEnd
+                      startDate={checkInDate}
+                      endDate={checkOutDate}
+                      minDate={checkInDate ? new Date(checkInDate.getTime() + 24 * 60 * 60 * 1000) : new Date()}
+                      filterDate={(date) => !isDateBlocked(date)}
+                      placeholderText="Check out"
                       className="mt-1 w-full border border-primary/10 px-3 py-2.5 text-sm outline-none focus:border-accent"
-                      value={checkOut}
-                      onChange={(e) => setCheckOut(e.target.value)}
                     />
                   </label>
                 </div>
+                {blockedIntervals.length > 0 && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                    <p className="font-semibold">Unavailable dates</p>
+                    <ul className="mt-2 space-y-1">
+                      {blockedIntervals.map((interval, index) => (
+                        <li key={index}>
+                          {interval.start.toISOString().slice(0, 10)} through {new Date(interval.end.getTime() - 1).toISOString().slice(0, 10)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <label className="block">
                   <span className="text-xs uppercase tracking-wider text-primary/50">Guests</span>
@@ -253,10 +319,10 @@ export default function RoomDetails() {
               <div className="mt-6">
                 <button
                   onClick={handleBook}
-                  disabled={nights === 0}
-                  className={`btn btn-lg w-full ${nights > 0 ? 'btn-primary' : 'opacity-50 cursor-not-allowed bg-gray-300 text-gray-500'}`}
+                  disabled={nights === 0 || hasDateConflict}
+                  className={`btn btn-lg w-full ${nights > 0 && !hasDateConflict ? 'btn-primary' : 'opacity-50 cursor-not-allowed bg-gray-300 text-gray-500'}`}
                 >
-                  {nights > 0 ? `Book Now - $${total.toLocaleString()}` : 'Select dates to book'}
+                  {hasDateConflict ? 'Selected dates unavailable' : nights > 0 ? `Book Now - $${total.toLocaleString()}` : 'Select dates to book'}
                 </button>
                 <p className="text-center text-xs text-primary/40 mt-3">Your room will be held for 10 minutes while you complete payment.</p>
               </div>

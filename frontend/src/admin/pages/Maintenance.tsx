@@ -247,7 +247,7 @@ export default function Maintenance() {
             <select value={createForm.technician} onChange={(e) => setCreateForm({ ...createForm, technician: e.target.value })}
               className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
               <option value="">— Select Technician —</option>
-              {users.filter((u) => ['technician', 'housekeeper'].includes(u.role?.toLowerCase())).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
+              {users.filter(isTechnician).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
             </select>
           </div>
           <div>
@@ -281,7 +281,7 @@ export default function Maintenance() {
             <select value={editForm.technician} onChange={(e) => setEditForm({ ...editForm, technician: e.target.value })}
               className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
               <option value="">— Select Technician —</option>
-              {users.filter((u) => ['technician', 'housekeeper'].includes(u.role?.toLowerCase())).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
+              {users.filter(isTechnician).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
             </select>
           </div>
           <div>

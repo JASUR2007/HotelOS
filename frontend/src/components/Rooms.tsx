@@ -8,7 +8,12 @@ import { fetchBookingsAdmin } from '../api';
  * Room grid with loading overlay. Lists rooms from RoomContext (filtered by capacity when user clicks "Check Now").
  * When loading is true, a full-screen overlay with SpinnerDotted is shown; grid uses responsive cols (1 on mobile, 3 on lg).
  */
-export default function Rooms() {
+type RoomsProps = {
+  showRecommended?: boolean;
+  showAllRooms?: boolean;
+};
+
+export default function Rooms({ showRecommended = true, showAllRooms = true }: RoomsProps) {
   const { rooms, loading } = useRoomContext();
   const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({});
 
@@ -42,7 +47,7 @@ export default function Rooms() {
           <p className="font-tertiary uppercase text-[15px] tracking-[6px]">GrandStay Hotel</p>
           <h2 className="font-primary text-[45px] mb-6">Room & Suites</h2>
         </div>
-        {recommendedRooms.length > 0 && (
+        {showRecommended && recommendedRooms.length > 0 && (
           <div className="mb-16">
             <div className="mb-8 text-center">
               <p className="font-tertiary uppercase text-[13px] tracking-[5px] text-accent">Most booked</p>
@@ -55,11 +60,13 @@ export default function Rooms() {
             </div>
           </div>
         )}
-        <div className="grid grid-cols-1 max-w-sm mx-auto gap-[30px] lg:grid-cols-3 lg:max-w-none lg:mx-0">
-          {rooms.map((room) => (
-            <Room key={room.id} room={room} />
-          ))}
-        </div>
+        {showAllRooms && (
+          <div className="grid grid-cols-1 max-w-sm mx-auto gap-[30px] lg:grid-cols-3 lg:max-w-none lg:mx-0">
+            {rooms.map((room) => (
+              <Room key={room.id} room={room} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -262,6 +262,7 @@ export interface AuthUser {
   email: string;
   displayName: string;
   role: UserRole;
+  roles?: UserRole[];
   permissions: PermissionName[];
 }
 

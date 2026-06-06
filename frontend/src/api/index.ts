@@ -25,6 +25,7 @@ import type {
 	CreateRoomDto,
 	UpdateRoomDto,
 	AmenityDto,
+	UserRole,
 } from '../types';
 
 const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
@@ -243,7 +244,17 @@ export function fetchUsers() {
 		{ id: 'u4', email: 'technician@hotelos.local', displayName: 'Alex Martin', role: 'Technician', permissions: [] },
 		{ id: 'u5', email: 'kitchen@hotelos.local', displayName: 'Chef John', role: 'KitchenStaff', permissions: [] },
 		{ id: 'u6', email: 'accountant@hotelos.local', displayName: 'Jane Smith', role: 'Accountant', permissions: [] },
-	]);
+	]).then((users) => users.map((user) => {
+		const rawUser = user as unknown as { roles?: string[]; role?: string };
+		return {
+			id: user.id,
+			email: user.email,
+			displayName: user.displayName,
+			permissions: user.permissions ?? [],
+			role: (user.role as UserRole) ?? (Array.isArray(rawUser.roles) ? (rawUser.roles[0] as UserRole) : 'Guest'),
+			roles: Array.isArray(rawUser.roles) ? (rawUser.roles as UserRole[]) : undefined,
+		};
+	}));
 }
 
 export function fetchNotificationsCenter() {

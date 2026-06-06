@@ -31,8 +31,11 @@ public sealed class PaymentDbContext(DbContextOptions<PaymentDbContext> options)
             entity.Property(item => item.RoomNumber).HasMaxLength(20).IsRequired();
             entity.Property(item => item.Status).HasMaxLength(50).IsRequired();
             entity.Property(item => item.TotalAmount).HasPrecision(12, 2);
+            entity.Property(item => item.ExpiresAt)
+                .HasColumnType("timestamp with time zone")
+                .IsRequired();
             entity.HasIndex(item => item.InvoiceNumber).IsUnique();
-            entity.HasData(new Invoice { Id = 1, InvoiceNumber = "INV-10021", GuestName = "Amelia Stone", RoomNumber = "101", TotalAmount = 420m, Status = "Paid" });
+            entity.HasData(new Invoice { Id = 1, InvoiceNumber = "INV-10021", GuestName = "Amelia Stone", RoomNumber = "101", TotalAmount = 420m, Status = "Paid", ExpiresAt = DateTimeOffset.UtcNow.AddHours(1) });
         });
 
         modelBuilder.Entity<Payment>(entity =>

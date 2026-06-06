@@ -71,8 +71,9 @@ public sealed record InvoiceDto
     public string RoomNumber { get; init; }
     public decimal TotalAmount { get; init; }
     public string Status { get; init; }
+    public DateTimeOffset ExpiresAt { get; init; }
 
-    public InvoiceDto(int id, string invoiceNumber, string guestName, string roomNumber, decimal totalAmount, string status)
+    public InvoiceDto(int id, string invoiceNumber, string guestName, string roomNumber, decimal totalAmount, string status, DateTimeOffset expiresAt)
     {
         Id = id;
         InvoiceNumber = invoiceNumber;
@@ -80,6 +81,7 @@ public sealed record InvoiceDto
         RoomNumber = roomNumber;
         TotalAmount = totalAmount;
         Status = status;
+        ExpiresAt = expiresAt;
     }
 }
 

@@ -8,6 +8,7 @@ public sealed class Invoice
     public string RoomNumber { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
     public string Status { get; set; } = "Open";
+    public DateTimeOffset ExpiresAt { get; set; } = DateTimeOffset.UtcNow.AddMinutes(10);
 }
 
 public sealed class Payment

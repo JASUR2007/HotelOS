@@ -30,6 +30,10 @@ interface EditForm {
 const emptyCreateForm: CreateForm = { roomNumber: '', assignedTo: '', priority: 'Medium' };
 const emptyEditForm: EditForm = { status: 'Queued', assignedTo: '' };
 
+function isHousekeeper(user: AuthUser) {
+  return user.role === 'Housekeeper';
+}
+
 export default function HousekeepingPage() {
   const [tasks, setTasks] = useState<CleaningTask[]>([]);
   const [users, setUsers] = useState<AuthUser[]>([]);
@@ -206,7 +210,7 @@ export default function HousekeepingPage() {
               className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent"
             >
               <option value="">— Select Staff —</option>
-              {users.filter((u) => u.role?.toLowerCase() === 'housekeeper').map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
+              {users.filter(isHousekeeper).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
             </select>
           </div>
           <div>
@@ -249,7 +253,7 @@ export default function HousekeepingPage() {
               className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent"
             >
               <option value="">— Select Staff —</option>
-              {users.filter((u) => u.role?.toLowerCase() === 'housekeeper').map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
+              {users.filter(isHousekeeper).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
             </select>
           </div>
           <div className="flex justify-end gap-3 pt-2">

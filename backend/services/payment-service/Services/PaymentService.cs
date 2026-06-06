@@ -15,7 +15,7 @@ public sealed class PaymentService(
 {
     public async Task<IReadOnlyList<InvoiceDto>> GetInvoicesAsync(CancellationToken cancellationToken = default)
         => (await repository.GetInvoicesAsync(cancellationToken))
-            .Select(invoice => new InvoiceDto(invoice.Id, invoice.InvoiceNumber, invoice.GuestName, invoice.RoomNumber, invoice.TotalAmount, invoice.Status))
+            .Select(invoice => new InvoiceDto(invoice.Id, invoice.InvoiceNumber, invoice.GuestName, invoice.RoomNumber, invoice.TotalAmount, invoice.Status, invoice.ExpiresAt))
             .ToList();
 
     public async Task<IReadOnlyList<PaymentDto>> GetPaymentsAsync(CancellationToken cancellationToken = default)
@@ -46,7 +46,8 @@ public sealed class PaymentService(
             GuestName = request.GuestName,
             RoomNumber = request.RoomNumber,
             TotalAmount = billingResult.NetTotal,
-            Status = "Open"
+            Status = "Open",
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10)
         }, cancellationToken);
 
         try
@@ -67,7 +68,7 @@ public sealed class PaymentService(
         }
 
         _ = new InvoiceGeneratedEvent(invoice.Id, invoice.InvoiceNumber, DateTimeOffset.UtcNow);
-        return new InvoiceDto(invoice.Id, invoice.InvoiceNumber, invoice.GuestName, invoice.RoomNumber, invoice.TotalAmount, invoice.Status);
+        return new InvoiceDto(invoice.Id, invoice.InvoiceNumber, invoice.GuestName, invoice.RoomNumber, invoice.TotalAmount, invoice.Status, invoice.ExpiresAt);
     }
 
     public async Task<PaymentDto> ProcessPaymentAsync(ProcessPaymentDto request, CancellationToken cancellationToken = default)
@@ -76,6 +77,11 @@ public sealed class PaymentService(
         if (invoice is null)
         {
             throw new ArgumentException($"Invoice with ID {request.InvoiceId} does not exist.");
+        }
+
+        if (invoice.ExpiresAt < DateTimeOffset.UtcNow)
+        {
+            throw new InvalidOperationException("Payment window has expired for this invoice.");
         }
 
         var payment = await repository.CreatePaymentAsync(new Payment

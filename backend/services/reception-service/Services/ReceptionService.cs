@@ -176,6 +176,8 @@ public sealed class ReceptionService(
     {
         var bookings = await bookingRepository.GetAllAsync(cancellationToken);
         var guests = await guestRepository.GetAllAsync(cancellationToken);
+        var roomNumbers = await GetRoomNumbersByIdAsync(cancellationToken);
+
         return bookings.Select(booking =>
         {
             var guest = guests.FirstOrDefault(g => g.Id == booking.GuestId);
@@ -183,7 +185,7 @@ public sealed class ReceptionService(
             return new BookingRecordDto(
                 booking.Id,
                 guest?.FullName ?? $"Guest {booking.GuestId}",
-                booking.RoomId.ToString(),
+                roomNumbers.TryGetValue(booking.RoomId, out var roomNumber) ? roomNumber : booking.RoomId.ToString(),
                 booking.Status,
                 booking.CheckInDate.ToString("yyyy-MM-dd"),
                 booking.CheckOutDate.ToString("yyyy-MM-dd"),
@@ -195,14 +197,20 @@ public sealed class ReceptionService(
     {
         var guests = await guestRepository.GetAllAsync(cancellationToken);
         var bookings = await bookingRepository.GetAllAsync(cancellationToken);
+        var roomNumbers = await GetRoomNumbersByIdAsync(cancellationToken);
+
         return guests.Select(g =>
         {
             var booking = bookings.FirstOrDefault(b => b.GuestId == g.Id && b.Status != "CheckedOut");
             var nights = booking is null ? 0 : CalculateNights(booking.CheckInDate, booking.CheckOutDate);
+            var roomNumber = booking is null
+                ? string.Empty
+                : roomNumbers.TryGetValue(booking.RoomId, out var rn) ? rn : booking.RoomId.ToString();
+
             return new GuestRecordDto(
                 g.Id,
                 g.FullName,
-                booking?.RoomId.ToString() ?? "",
+                roomNumber,
                 booking?.CheckInDate.ToString("yyyy-MM-dd") ?? "",
                 booking?.CheckOutDate.ToString("yyyy-MM-dd") ?? "",
                 nights * 150m);
@@ -392,6 +400,20 @@ public sealed class ReceptionService(
         return nights <= 0 ? 1 : nights;
     }
 
-    private sealed record RoomInfo(string RoomNumber, decimal PricePerNight);
+    private async Task<Dictionary<int, string>> GetRoomNumbersByIdAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var roomClient = httpClientFactory.CreateClient("room-service");
+            var rooms = await roomClient.GetFromJsonAsync<RoomInfo[]>("api/room/rooms", cancellationToken);
+            return rooms?.ToDictionary(room => room.Id, room => room.RoomNumber) ?? new Dictionary<int, string>();
+        }
+        catch
+        {
+            return new Dictionary<int, string>();
+        }
+    }
+
+    private sealed record RoomInfo(int Id, string RoomNumber, decimal PricePerNight);
     private sealed record OrderInfo(string RoomNumber, decimal Total);
 }

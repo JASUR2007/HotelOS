@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
+const TIMER_MINUTES = 10;
+
 export default function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -128,6 +130,7 @@ export default function Checkout() {
           minibarTotal: 0,
           damagesTotal: 0,
           discountsTotal: 0,
+          expiresAt: Date.now() + TIMER_MINUTES * 60 * 1000,
         },
       }), 1500);
     } catch (err) {

@@ -19,6 +19,7 @@ public static class DbInitializer
         await AddColumnIfMissingAsync(context, "idempotent_refunds", "PaymentId", "integer NOT NULL DEFAULT 0");
         await AddColumnIfMissingAsync(context, "idempotent_refunds", "CreatedAt", "timestamptz NOT NULL DEFAULT now()");
         await AddColumnIfMissingAsync(context, "invoices", "RoomNumber", "text NOT NULL DEFAULT ''");
+        await AddColumnIfMissingAsync(context, "invoices", "ExpiresAt", "timestamptz NOT NULL DEFAULT now()");
 
         // Fix missing auto-increment on primary key columns
         await FixIdentityColumnAsync(context, "payments", "Id");
