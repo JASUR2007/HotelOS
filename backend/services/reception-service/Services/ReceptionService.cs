@@ -156,6 +156,7 @@ public sealed class ReceptionService(
         {
             request.BookingId,
             booking.RoomId,
+            RoomNumber = roomNumber,
             OccurredAt = DateTimeOffset.UtcNow
         });
 

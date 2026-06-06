@@ -3,6 +3,16 @@ using HotelOS.PaymentService.DTOs;
 
 namespace HotelOS.PaymentService.Validators;
 
+public sealed class RefundPaymentDtoValidator : AbstractValidator<RefundPaymentDto>
+{
+    public RefundPaymentDtoValidator()
+    {
+        RuleFor(item => item.PaymentId).GreaterThan(0);
+        RuleFor(item => item.Amount).GreaterThan(0);
+        RuleFor(item => item.Reason).NotEmpty();
+    }
+}
+
 public sealed class CreateInvoiceDtoValidator : AbstractValidator<CreateInvoiceDto>
 {
     public CreateInvoiceDtoValidator()

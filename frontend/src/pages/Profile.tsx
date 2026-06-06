@@ -51,6 +51,7 @@ export default function Profile() {
   const [maintTitle, setMaintTitle] = useState('');
   const [maintDesc, setMaintDesc] = useState('');
   const [maintStatus, setMaintStatus] = useState('');
+  const [cancelStatus, setCancelStatus] = useState('');
 
   const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
 
@@ -138,6 +139,18 @@ export default function Profile() {
         .finally(() => setLoadingM(false));
     }
   };
+
+  async function cancelReservation(id: number) {
+    setCancelStatus('');
+    try {
+      const res = await fetch(`${apiBaseUrl}/reception/bookings/${id}/cancel`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to cancel');
+      setCancelStatus('Booking cancelled successfully.');
+      setReservations((prev) => prev.map((r) => r.id === id ? { ...r, status: 'Cancelled' } : r));
+    } catch (err) {
+      setCancelStatus(err instanceof Error ? err.message : 'Failed');
+    }
+  }
 
   async function submitMaintenance(e: React.FormEvent) {
     e.preventDefault();
@@ -252,7 +265,9 @@ export default function Profile() {
             </div>
           ) : (
             <div className="space-y-4">
-              {reservations.map(res => (
+              {reservations.map(res => {
+                const canCancel = res.status === 'Confirmed' || res.status === 'HELD';
+                return (
                 <div key={res.id} className="border border-primary/10 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <p className="font-semibold">Room {res.roomNumber}</p>
@@ -268,9 +283,15 @@ export default function Profile() {
                       {res.status}
                     </span>
                     <span className="font-bold">${res.total}</span>
+                    {canCancel && (
+                      <button onClick={() => cancelReservation(res.id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </div>
-              ))}
+              );})}
+              {cancelStatus && <p className="text-center text-sm text-emerald-700">{cancelStatus}</p>}
             </div>
           )}
         </div>

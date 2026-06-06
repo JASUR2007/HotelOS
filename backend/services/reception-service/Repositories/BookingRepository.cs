@@ -13,6 +13,10 @@ public sealed class BookingRepository(ReceptionDbContext context) : IBookingRepo
         {
             await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
+            // Pessimistic advisory lock: prevents race conditions when two admins book same room simultaneously
+            await context.Database.ExecuteSqlRawAsync(
+                "SELECT pg_advisory_xact_lock(@p0)", [booking.RoomId], cancellationToken);
+
             var hasOverlap = await context.Bookings.AnyAsync(existing =>
                 existing.RoomId == booking.RoomId &&
                 existing.Status != "CheckedOut" &&

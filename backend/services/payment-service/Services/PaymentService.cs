@@ -108,6 +108,16 @@ public sealed class PaymentService(
 
     public async Task<PaymentDto> RefundAsync(RefundPaymentDto request, CancellationToken cancellationToken = default)
     {
+        if (!string.IsNullOrEmpty(request.IdempotencyKey))
+        {
+            var alreadyRefunded = await repository.GetIdempotentRefundAsync(request.IdempotencyKey, cancellationToken);
+            if (alreadyRefunded is not null)
+            {
+                logger.LogInformation("Idempotent refund skipped for key {Key}, payment {PaymentId}", request.IdempotencyKey, alreadyRefunded.PaymentId);
+                return new PaymentDto(alreadyRefunded.PaymentId, request.PaymentId, string.Empty, string.Empty, string.Empty, request.Amount, "Refund", "Refunded");
+            }
+        }
+
         var payment = await repository.CreatePaymentAsync(new Payment
         {
             InvoiceId = request.PaymentId,
@@ -116,6 +126,16 @@ public sealed class PaymentService(
             Status = "Refunded",
             ProcessedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
+
+        if (!string.IsNullOrEmpty(request.IdempotencyKey))
+        {
+            await repository.SaveIdempotentRefundAsync(new IdempotentRefund
+            {
+                IdempotencyKey = request.IdempotencyKey,
+                PaymentId = payment.Id,
+                CreatedAt = DateTimeOffset.UtcNow
+            }, cancellationToken);
+        }
 
         try
         {

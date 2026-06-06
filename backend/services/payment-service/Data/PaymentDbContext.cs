@@ -10,6 +10,7 @@ public sealed class PaymentDbContext(DbContextOptions<PaymentDbContext> options)
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<TransactionLog> TransactionLogs => Set<TransactionLog>();
     public DbSet<PaymentHistory> PaymentHistory => Set<PaymentHistory>();
+    public DbSet<IdempotentRefund> IdempotentRefunds => Set<IdempotentRefund>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -54,6 +55,13 @@ public sealed class PaymentDbContext(DbContextOptions<PaymentDbContext> options)
             entity.ToTable("payment_history");
             entity.HasKey(item => item.Id);
             entity.Property(item => item.Status).HasMaxLength(50).IsRequired();
+        });
+
+        modelBuilder.Entity<IdempotentRefund>(entity =>
+        {
+            entity.ToTable("idempotent_refunds");
+            entity.HasKey(item => item.IdempotencyKey);
+            entity.Property(item => item.IdempotencyKey).HasMaxLength(200);
         });
     }
 }

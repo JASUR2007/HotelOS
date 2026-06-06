@@ -43,6 +43,7 @@ builder.Services.AddDbContext<HousekeepingDbContext>(options =>
 
 builder.Services.AddScoped<IHousekeepingRepository, HousekeepingRepository>();
 builder.Services.AddScoped<IHousekeepingService, HousekeepingService>();
+builder.Services.AddHostedService<HotelOS.HousekeepingService.Consumers.RabbitMqHousekeepingConsumer>();
 
 var app = builder.Build();
 

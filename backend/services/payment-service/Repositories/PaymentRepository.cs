@@ -34,4 +34,13 @@ public sealed class PaymentRepository(PaymentDbContext context) : IPaymentReposi
                   join invoice in context.Invoices.AsNoTracking() on payment.InvoiceId equals invoice.Id
                   select new ValueTuple<Payment, Invoice>(payment, invoice))
                   .ToListAsync(cancellationToken);
+
+    public async Task<IdempotentRefund?> GetIdempotentRefundAsync(string idempotencyKey, CancellationToken cancellationToken = default)
+        => await context.IdempotentRefunds.FindAsync([idempotencyKey], cancellationToken);
+
+    public async Task SaveIdempotentRefundAsync(IdempotentRefund record, CancellationToken cancellationToken = default)
+    {
+        context.IdempotentRefunds.Add(record);
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }

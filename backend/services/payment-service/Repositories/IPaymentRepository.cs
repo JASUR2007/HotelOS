@@ -10,4 +10,6 @@ public interface IPaymentRepository
     Task<IReadOnlyList<Payment>> GetPaymentsAsync(CancellationToken cancellationToken = default);
     Task<Invoice?> GetInvoiceByIdAsync(int invoiceId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<(Payment Payment, Invoice Invoice)>> GetPaymentsWithInvoicesAsync(CancellationToken cancellationToken = default);
+    Task<IdempotentRefund?> GetIdempotentRefundAsync(string idempotencyKey, CancellationToken cancellationToken = default);
+    Task SaveIdempotentRefundAsync(IdempotentRefund record, CancellationToken cancellationToken = default);
 }

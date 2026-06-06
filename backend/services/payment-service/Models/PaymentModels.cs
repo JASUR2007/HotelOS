@@ -35,3 +35,10 @@ public sealed class PaymentHistory
     public string Status { get; set; } = string.Empty;
     public DateTimeOffset ChangedAt { get; set; }
 }
+
+public sealed class IdempotentRefund
+{
+    public string IdempotencyKey { get; set; } = string.Empty;
+    public int PaymentId { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+}

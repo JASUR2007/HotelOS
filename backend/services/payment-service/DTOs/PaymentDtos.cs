@@ -52,12 +52,14 @@ public sealed record RefundPaymentDto
     public int PaymentId { get; init; }
     public decimal Amount { get; init; }
     public string Reason { get; init; }
+    public string IdempotencyKey { get; init; }
 
-    public RefundPaymentDto(int paymentId, decimal amount, string reason)
+    public RefundPaymentDto(int paymentId, decimal amount, string reason, string idempotencyKey = "")
     {
         PaymentId = paymentId;
         Amount = amount;
         Reason = reason;
+        IdempotencyKey = idempotencyKey;
     }
 }
 
