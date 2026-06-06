@@ -28,6 +28,10 @@ const STATUSES = ['Queued', 'Assigned', 'In Progress', 'Resolved', 'Closed'];
 const emptyCreateForm = { roomNumber: '', title: '', description: '', priority: 'Medium', technician: '' };
 const emptyEditForm = { status: 'Queued', technician: '', priority: 'Medium' };
 
+function isTechnician(user: AuthUser) {
+  return user.role === 'Technician';
+}
+
 export default function Maintenance() {
   const [tickets, setTickets] = useState<MaintenanceTicket[]>([]);
   const [users, setUsers] = useState<AuthUser[]>([]);
@@ -96,6 +100,20 @@ export default function Maintenance() {
         }),
       });
       if (!r.ok) throw new Error('Failed');
+      const createdTicket = await r.json();
+
+      if (createForm.technician) {
+        const assignResponse = await fetch(`${apiBaseUrl}/maintenance/assign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ issueId: createdTicket.id, technicianName: createForm.technician }),
+        });
+        if (!assignResponse.ok) throw new Error('Failed to assign technician');
+      }
+
       setModal(null);
       await loadTickets();
     } catch {
@@ -229,7 +247,7 @@ export default function Maintenance() {
             <select value={createForm.technician} onChange={(e) => setCreateForm({ ...createForm, technician: e.target.value })}
               className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
               <option value="">— Select Technician —</option>
-              {users.filter(u => u.role === 'Technician' || u.role === 'Housekeeper').map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
+              {users.filter((u) => ['technician', 'housekeeper'].includes(u.role?.toLowerCase())).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
             </select>
           </div>
           <div>
@@ -263,7 +281,7 @@ export default function Maintenance() {
             <select value={editForm.technician} onChange={(e) => setEditForm({ ...editForm, technician: e.target.value })}
               className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
               <option value="">— Select Technician —</option>
-              {users.filter(u => u.role === 'Technician' || u.role === 'Housekeeper').map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
+              {users.filter((u) => ['technician', 'housekeeper'].includes(u.role?.toLowerCase())).map(u => <option key={u.id} value={u.displayName}>{u.displayName} ({u.role})</option>)}
             </select>
           </div>
           <div>

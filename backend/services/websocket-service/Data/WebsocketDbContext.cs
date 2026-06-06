@@ -21,10 +21,13 @@ public sealed class WebsocketDbContext(DbContextOptions<WebsocketDbContext> opti
         {
             entity.ToTable("notifications");
             entity.HasKey(item => item.Id);
-            entity.Property(item => item.Type).HasMaxLength(50).IsRequired();
-            entity.Property(item => item.Title).HasMaxLength(200).IsRequired();
-            entity.Property(item => item.Message).HasMaxLength(500).IsRequired();
-            entity.Property(item => item.TargetRole).HasMaxLength(50);
+            entity.Property(item => item.Id).HasColumnName("id");
+            entity.Property(item => item.Type).HasColumnName("type").HasMaxLength(50).IsRequired();
+            entity.Property(item => item.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
+            entity.Property(item => item.Message).HasColumnName("message").HasMaxLength(500).IsRequired();
+            entity.Property(item => item.CreatedAt).HasColumnName("created_at");
+            entity.Property(item => item.IsRead).HasColumnName("is_read");
+            entity.Property(item => item.TargetRole).HasColumnName("target_role").HasMaxLength(50);
             entity.HasIndex(item => item.CreatedAt);
             entity.HasData(
                 new NotificationRecord { Id = 1, Type = "reception", Title = "Guest checked in", Message = "Room assignment completed for Amelia Stone.", CreatedAt = new DateTimeOffset(2026, 5, 20, 9, 12, 0, TimeSpan.Zero) },

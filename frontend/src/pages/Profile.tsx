@@ -50,7 +50,7 @@ export default function Profile() {
 
   const [maintRoom, setMaintRoom] = useState('');
   const [maintTitle, setMaintTitle] = useState('');
-  const [maintCategory, setMaintCategory] = useState('General');
+  const [maintPriority, setMaintPriority] = useState('Medium');
   const [maintDesc, setMaintDesc] = useState('');
   const [maintStatus, setMaintStatus] = useState('');
   const [cancelStatus, setCancelStatus] = useState('');
@@ -170,12 +170,13 @@ export default function Profile() {
           'Content-Type': 'application/json',
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
-        body: JSON.stringify({ roomNumber: maintRoom, title: maintTitle, category: maintCategory, description: maintDesc, priority: 'Medium' }),
+        body: JSON.stringify({ roomNumber: maintRoom, title: maintTitle, category: 'General', description: maintDesc, priority: maintPriority }),
       });
       if (!res.ok) throw new Error('Failed to submit request');
       setMaintStatus('Maintenance request submitted!');
       setMaintRoom('');
       setMaintTitle('');
+      setMaintPriority('Medium');
       setMaintDesc('');
       loadMaintenance();
     } catch (err) {
@@ -448,15 +449,11 @@ export default function Profile() {
               <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">
                 Issue Type
                 <select className="mt-2 w-full border border-primary/10 bg-white px-4 py-3 outline-none text-primary focus:border-accent"
-                  value={maintCategory} onChange={e => setMaintCategory(e.target.value)}>
-                  <option value="General">General</option>
-                  <option value="Plumbing">Plumbing</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="HVAC">HVAC</option>
-                  <option value="Furniture">Furniture</option>
-                  <option value="Cleaning">Cleaning</option>
-                  <option value="Noise">Noise Complaint</option>
-                  <option value="Safety">Safety Hazard</option>
+                  value={maintPriority} onChange={e => setMaintPriority(e.target.value)}>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
                 </select>
               </label>
               <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">

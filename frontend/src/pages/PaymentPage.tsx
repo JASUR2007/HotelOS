@@ -27,11 +27,51 @@ export default function PaymentPage() {
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvc, setCardCvc] = useState('');
+  const [expiryError, setExpiryError] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(TIMER_MINUTES * 60);
 
   const total = state?.total || 0;
+
+  // Validate card expiry date (MM/YY format, must not be expired)
+  function validateExpiry(expiryStr: string): boolean {
+    if (!expiryStr) return false;
+    
+    const parts = expiryStr.split('/');
+    if (parts.length !== 2) return false;
+    
+    const month = parseInt(parts[0], 10);
+    const year = parseInt(parts[1], 10);
+    
+    // Validate month (01-12)
+    if (isNaN(month) || month < 1 || month > 12) return false;
+    if (isNaN(year) || year < 0) return false;
+    
+    // Get current date
+    const now = new Date();
+    const currentYear = now.getFullYear() % 100; // Get last 2 digits
+    const currentMonth = now.getMonth() + 1; // JS months are 0-11
+    
+    // If year is less than current year, it's expired
+    if (year < currentYear) return false;
+    
+    // If year equals current year, month must be greater than current month
+    if (year === currentYear && month <= currentMonth) return false;
+    
+    return true;
+  }
+
+  function handleExpiryChange(value: string) {
+    setCardExpiry(value);
+    
+    // Validate and show error if invalid
+    if (value && !validateExpiry(value)) {
+      setExpiryError('Card has expired or date is invalid (use MM/YY format)');
+    } else {
+      setExpiryError('');
+    }
+  }
   const invoiceId = state?.invoiceId ?? null;
   const bookingId = state?.bookingId;
   const roomNightsTotal = state?.roomNightsTotal || 0;
@@ -72,6 +112,11 @@ export default function PaymentPage() {
 
     if (method === 'Card' && (!cardNumber.trim() || !cardExpiry.trim() || !cardCvc.trim())) {
       setError('Please complete all card fields before submitting payment.');
+      return;
+    }
+
+    if (method === 'Card' && !validateExpiry(cardExpiry)) {
+      setError('Card expiry date is invalid or expired. Please use MM/YY format with a valid future date.');
       return;
     }
 
@@ -223,13 +268,16 @@ export default function PaymentPage() {
               <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">
                 Expiry
                 <input
-                  className="mt-2 w-full border border-primary/10 px-4 py-3 outline-none focus:border-accent"
+                  className={`mt-2 w-full border px-4 py-3 outline-none focus:border-accent ${
+                    expiryError ? 'border-red-400' : 'border-primary/10'
+                  }`}
                   value={cardExpiry}
-                  onChange={(e) => setCardExpiry(e.target.value)}
+                  onChange={(e) => handleExpiryChange(e.target.value)}
                   placeholder="MM/YY"
                   maxLength={5}
                   required
                 />
+                {expiryError && <p className="mt-1 text-xs text-red-600">{expiryError}</p>}
               </label>
               <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">
                 CVC

@@ -23,8 +23,8 @@ export const sidebarGroups: SidebarGroup[] = [
     items: [
       { title: 'Rooms', path: '/admin/rooms', roles: ['SuperAdmin', 'Admin', 'Receptionist'], permissions: ['manage_rooms'] },
       { title: 'Bookings', path: '/admin/bookings', roles: ['SuperAdmin', 'Admin', 'Receptionist'], permissions: ['create_booking'] },
-      { title: 'Housekeeping', path: '/admin/housekeeping', roles: ['SuperAdmin', 'Admin', 'Housekeeper'], permissions: ['view_housekeeping'] },
-      { title: 'Maintenance', path: '/admin/maintenance', roles: ['SuperAdmin', 'Admin', 'Technician'], permissions: ['view_maintenances'] },
+      { title: 'Housekeeping', path: '/admin/housekeeping', permissions: ['view_housekeeping'] },
+      { title: 'Maintenance', path: '/admin/maintenance', permissions: ['view_maintenances'] },
     ],
   },
   {
@@ -51,7 +51,7 @@ export const sidebarGroups: SidebarGroup[] = [
       { title: 'Users', path: '/admin/users', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_users'] },
       { title: 'Roles', path: '/admin/roles', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_roles'] },
       { title: 'Permissions', path: '/admin/permissions', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_permissions'] },
-      { title: 'Audit Logs', path: '/admin/audit-logs', roles: ['SuperAdmin', 'Admin'], permissions: ['view_audit_logs'] },
+      { title: 'Audit Logs', path: '/admin/audit-logs', permissions: ['view_audit_logs'] },
     ],
   },
   {
