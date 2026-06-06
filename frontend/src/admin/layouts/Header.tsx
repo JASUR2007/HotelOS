@@ -54,6 +54,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    if (!user?.email) return;
     fetchNotifications()
       .then((data) => {
         clearAll();
@@ -71,7 +72,7 @@ export default function Header() {
         });
       })
       .catch(() => {});
-  }, []);
+  }, [user?.email]);
 
   return (
     <header className="sticky top-0 z-20 border-b border-primary/10 bg-white/95 backdrop-blur shadow-sm">

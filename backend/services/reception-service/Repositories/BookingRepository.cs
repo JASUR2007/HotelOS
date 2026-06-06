@@ -73,6 +73,15 @@ public sealed class BookingRepository(ReceptionDbContext context) : IBookingRepo
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    public Task<bool> AnyOverlapForGuestAsync(int guestId, DateOnly checkInDate, DateOnly checkOutDate, CancellationToken cancellationToken = default)
+        => context.Bookings.AnyAsync(existing =>
+            existing.GuestId == guestId &&
+            existing.Status != "Cancelled" &&
+            existing.Status != "CheckedOut" &&
+            existing.CheckInDate < checkOutDate &&
+            checkInDate < existing.CheckOutDate,
+            cancellationToken);
+
     public Task SaveChangesAsync(CancellationToken cancellationToken = default)
         => context.SaveChangesAsync(cancellationToken);
 }

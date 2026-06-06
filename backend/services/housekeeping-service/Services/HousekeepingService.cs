@@ -11,7 +11,7 @@ public sealed class HousekeepingService(IHousekeepingRepository repository, IEve
 {
     public async Task<IReadOnlyList<CleaningTaskDto>> GetQueueAsync(CancellationToken cancellationToken = default)
         => (await repository.GetQueueAsync(cancellationToken))
-            .Select(task => new CleaningTaskDto(task.RoomId, task.RoomNumber, task.Status, task.AssignedTo))
+            .Select(task => new CleaningTaskDto(task.Id, task.RoomId, task.RoomNumber, task.Status, task.AssignedTo, task.Priority))
             .ToList();
 
     public async Task<CleaningTaskDto> UpdateStatusAsync(UpdateCleaningStatusDto request, CancellationToken cancellationToken = default)
@@ -49,7 +49,7 @@ public sealed class HousekeepingService(IHousekeepingRepository repository, IEve
             _ = new CleaningQueuedEvent(task.RoomId, task.RoomNumber, DateTimeOffset.UtcNow);
         }
 
-        return new CleaningTaskDto(task.RoomId, task.RoomNumber, task.Status, task.AssignedTo);
+        return new CleaningTaskDto(task.Id, task.RoomId, task.RoomNumber, task.Status, task.AssignedTo, task.Priority);
     }
 
     public async Task<CleaningTaskDto> CreateTaskAsync(CreateCleaningTaskDto request, CancellationToken cancellationToken = default)
@@ -74,7 +74,7 @@ public sealed class HousekeepingService(IHousekeepingRepository repository, IEve
 
         _ = new CleaningQueuedEvent(task.RoomId, task.RoomNumber, DateTimeOffset.UtcNow);
 
-        return new CleaningTaskDto(task.RoomId, task.RoomNumber, task.Status, task.AssignedTo);
+        return new CleaningTaskDto(task.Id, task.RoomId, task.RoomNumber, task.Status, task.AssignedTo, task.Priority);
     }
 
     public async Task<CleaningTaskDto> UpdateTaskAsync(int id, UpdateCleaningTaskDto request, CancellationToken cancellationToken = default)
@@ -116,7 +116,7 @@ public sealed class HousekeepingService(IHousekeepingRepository repository, IEve
             _ = new CleaningQueuedEvent(task.RoomId, task.RoomNumber, DateTimeOffset.UtcNow);
         }
 
-        return new CleaningTaskDto(task.RoomId, task.RoomNumber, task.Status, task.AssignedTo);
+        return new CleaningTaskDto(task.Id, task.RoomId, task.RoomNumber, task.Status, task.AssignedTo, task.Priority);
     }
 
     public async Task DeleteTaskAsync(int id, CancellationToken cancellationToken = default)

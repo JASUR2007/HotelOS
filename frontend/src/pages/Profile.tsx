@@ -52,6 +52,7 @@ export default function Profile() {
   const [maintDesc, setMaintDesc] = useState('');
   const [maintStatus, setMaintStatus] = useState('');
   const [cancelStatus, setCancelStatus] = useState('');
+  const [cancelTarget, setCancelTarget] = useState<number | null>(null);
 
   const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
 
@@ -140,12 +141,13 @@ export default function Profile() {
     }
   };
 
-  async function cancelReservation(id: number) {
+  async function confirmCancel(id: number) {
+    setCancelTarget(null);
     setCancelStatus('');
     try {
       const res = await fetch(`${apiBaseUrl}/reception/bookings/${id}/cancel`, { method: 'POST' });
       if (!res.ok) throw new Error('Failed to cancel');
-      setCancelStatus('Booking cancelled successfully.');
+      setCancelStatus('Booking cancelled — 50% refund will be processed.');
       setReservations((prev) => prev.map((r) => r.id === id ? { ...r, status: 'Cancelled' } : r));
     } catch (err) {
       setCancelStatus(err instanceof Error ? err.message : 'Failed');
@@ -284,7 +286,7 @@ export default function Profile() {
                     </span>
                     <span className="font-bold">${res.total}</span>
                     {canCancel && (
-                      <button onClick={() => cancelReservation(res.id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
+                      <button onClick={() => setCancelTarget(res.id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
                         Cancel
                       </button>
                     )}
@@ -292,6 +294,31 @@ export default function Profile() {
                 </div>
               );})}
               {cancelStatus && <p className="text-center text-sm text-emerald-700">{cancelStatus}</p>}
+            </div>
+          )}
+
+          {cancelTarget !== null && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setCancelTarget(null)}>
+              <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-lg font-bold text-primary">Cancel Booking?</h3>
+                <p className="mt-3 text-sm text-primary/70">
+                  Only <strong>50% of the total amount</strong> will be refunded to you. This action cannot be undone.
+                </p>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    onClick={() => setCancelTarget(null)}
+                    className="rounded-lg border border-primary/10 px-5 py-2.5 text-sm text-primary/60 hover:bg-primary/5"
+                  >
+                    Keep Booking
+                  </button>
+                  <button
+                    onClick={() => confirmCancel(cancelTarget)}
+                    className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700"
+                  >
+                    Yes, Cancel — 50% Refund
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

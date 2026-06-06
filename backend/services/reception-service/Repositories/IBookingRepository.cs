@@ -11,5 +11,6 @@ public interface IBookingRepository
     Task PatchStatusAsync(int bookingId, string status, CancellationToken cancellationToken = default);
     Task UpdateAsync(Booking booking, CancellationToken cancellationToken = default);
     Task DeleteAsync(int bookingId, CancellationToken cancellationToken = default);
+    Task<bool> AnyOverlapForGuestAsync(int guestId, DateOnly checkInDate, DateOnly checkOutDate, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

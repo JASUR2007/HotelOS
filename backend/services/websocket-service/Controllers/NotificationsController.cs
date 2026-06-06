@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelOS.WebsocketService.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("api/[controller]")]
 public sealed class NotificationsController(
     INotificationRepository repository,
     INotificationBroadcastService broadcaster) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
@@ -20,6 +20,7 @@ public sealed class NotificationsController(
         return Ok(await repository.GetAllAsync(role, cancellationToken));
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] RealtimeNotificationDto notification, CancellationToken cancellationToken)
     {

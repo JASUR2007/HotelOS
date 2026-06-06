@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
@@ -17,7 +17,7 @@ export default function Checkout() {
     total?: number;
   } | null;
 
-  const [roomNumber, setRoomNumber] = useState(state?.roomNumber || '');
+  const [roomNumber] = useState(state?.roomNumber || '');
   const [checkIn, setCheckIn] = useState(state?.checkIn || '');
   const [checkOut, setCheckOut] = useState(state?.checkOut || '');
   const [guests, setGuests] = useState(state?.guests || 1);
@@ -25,6 +25,7 @@ export default function Checkout() {
   const [guestEmail, setGuestEmail] = useState(user?.email || '');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [pricePerNight, setPricePerNight] = useState(state?.pricePerNight || 0);
 
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
@@ -32,10 +33,19 @@ export default function Checkout() {
     return diff > 0 ? diff : 0;
   })();
 
-  const pricePerNight = state?.pricePerNight || 220;
   const roomTotal = nights * pricePerNight;
   const taxes = Math.round(roomTotal * 0.05);
   const grandTotal = roomTotal + taxes;
+
+  useEffect(() => {
+    if (state?.roomId && !state?.pricePerNight) {
+      const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
+      fetch(`${apiBaseUrl}/room/rooms/${state.roomId}`)
+        .then((r) => r.json())
+        .then((data) => setPricePerNight(data.pricePerNight ?? 0))
+        .catch(() => {});
+    }
+  }, [state?.roomId, state?.pricePerNight]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -71,13 +81,23 @@ export default function Checkout() {
       const bookingData = await res.json();
       setStatus('Booking confirmed! Creating invoice...');
 
+      let actualRoomNumber = roomNumber;
+      try {
+        const roomResp = await fetch(`${apiBaseUrl}/room/rooms/${bookingData.roomId}`);
+        if (roomResp.ok) {
+          const roomData = await roomResp.json();
+          actualRoomNumber = roomData.roomNumber;
+          if (!pricePerNight) setPricePerNight(roomData.pricePerNight ?? 0);
+        }
+      } catch {}
+
       const invoiceRes = await fetch(`${apiBaseUrl}/payments/invoice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           invoiceNumber: `INV-${new Date().toISOString().split('T')[0]}-${bookingData.bookingId.toString().padStart(4, '0')}`,
           guestName: guestName || user.displayName,
-          roomNumber: roomNumber,
+          roomNumber: actualRoomNumber,
           totalAmount: grandTotal,
           roomNightsTotal: roomTotal,
           foodOrdersTotal: 0,
@@ -99,7 +119,7 @@ export default function Checkout() {
           invoiceId: invoiceData.id,
           bookingId: bookingData.bookingId,
           roomId: bookingData.roomId,
-          roomNumber: roomNumber,
+          roomNumber: actualRoomNumber,
           guestName: guestName || user.displayName,
           total: grandTotal,
           nights,
@@ -149,10 +169,9 @@ export default function Checkout() {
         <label className="block text-sm uppercase tracking-[0.25em] text-primary/80">
           Room Number
           <input
-            className="mt-2 w-full border border-primary/10 px-4 py-3 text-primary outline-none focus:border-accent"
+            className="mt-2 w-full border border-primary/10 bg-primary/5 px-4 py-3 text-primary outline-none cursor-not-allowed"
             value={roomNumber}
-            onChange={(e) => setRoomNumber(e.target.value)}
-            placeholder="e.g. 101"
+            readOnly
             required
           />
         </label>
