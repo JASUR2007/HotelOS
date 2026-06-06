@@ -3,7 +3,7 @@ import { DataTable } from '../components';
 import type { Column } from '../components/DataTable';
 import Modal, { ConfirmDeleteModal } from '../components/Modal';
 import StatusBadge from '../components/StatusBadge';
-import { getHotelApiBaseUrl, guestCheckIn, guestCheckOut, fetchBookingsAdmin } from '../../api';
+import { getHotelApiBaseUrl, getAuthHeaders, guestCheckIn, guestCheckOut, fetchBookingsAdmin } from '../../api';
 import type { BookingRecord } from '../../types';
 
 function getAccessToken(): string {
@@ -29,6 +29,7 @@ export default function Bookings() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const [rooms, setRooms] = useState<{ id: number; roomNumber: string; status: string }[]>([]);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [checkInForm, setCheckInForm] = useState({
     guestName: '',
@@ -37,6 +38,7 @@ export default function Bookings() {
     kids: 0,
     checkInDate: '',
     checkOutDate: '',
+    roomId: 0,
   });
   const [saving, setSaving] = useState(false);
 
@@ -75,6 +77,20 @@ export default function Bookings() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${baseUrl}/room/rooms`, {
+          headers: { ...getAuthHeaders() },
+        });
+        if (res.ok) {
+          const data: { id: number; roomNumber: string; status: string }[] = await res.json();
+          setRooms(data.filter((r) => r.status === 'Available'));
+        }
+      } catch { /* ignore */ }
+    })();
+  }, []);
+
   async function handleCheckIn() {
     setSaving(true);
     setError(null);
@@ -86,10 +102,11 @@ export default function Bookings() {
         kids: checkInForm.kids,
         checkInDate: checkInForm.checkInDate,
         checkOutDate: checkInForm.checkOutDate,
+        roomId: checkInForm.roomId || undefined,
       });
       showSuccess('Guest checked in successfully. Booking created, event published, notification sent.');
       setShowCheckIn(false);
-      setCheckInForm({ guestName: '', email: '', adults: 1, kids: 0, checkInDate: '', checkOutDate: '' });
+      setCheckInForm({ guestName: '', email: '', adults: 1, kids: 0, checkInDate: '', checkOutDate: '', roomId: 0 });
       await load();
     } catch {
       setError('Check-in failed. Is the backend running?');
@@ -279,9 +296,23 @@ export default function Bookings() {
               />
             </div>
             <div>
+              <label className="mb-1 block text-xs uppercase tracking-wider text-primary/50">Room</label>
+              <select
+                value={checkInForm.roomId}
+                onChange={(e) => setCheckInForm({ ...checkInForm, roomId: +e.target.value })}
+                className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent"
+              >
+                <option value={0}>Auto-assign</option>
+                {rooms.map((r) => (
+                  <option key={r.id} value={r.id}>#{r.roomNumber} ({r.status})</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="mb-1 block text-xs uppercase tracking-wider text-primary/50">Check-In Date</label>
               <input
                 type="date"
+                min={new Date().toISOString().split('T')[0]}
                 value={checkInForm.checkInDate}
                 onChange={(e) => setCheckInForm({ ...checkInForm, checkInDate: e.target.value })}
                 className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent"
@@ -291,6 +322,7 @@ export default function Bookings() {
               <label className="mb-1 block text-xs uppercase tracking-wider text-primary/50">Check-Out Date</label>
               <input
                 type="date"
+                min={checkInForm.checkInDate || new Date().toISOString().split('T')[0]}
                 value={checkInForm.checkOutDate}
                 onChange={(e) => setCheckInForm({ ...checkInForm, checkOutDate: e.target.value })}
                 className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent"

@@ -23,7 +23,7 @@ export const sidebarGroups: SidebarGroup[] = [
     items: [
       { title: 'Rooms', path: '/admin/rooms', roles: ['SuperAdmin', 'Admin', 'Receptionist'], permissions: ['manage_rooms'] },
       { title: 'Bookings', path: '/admin/bookings', roles: ['SuperAdmin', 'Admin', 'Receptionist'], permissions: ['create_booking'] },
-      { title: 'Housekeeping', path: '/admin/housekeeping', roles: ['SuperAdmin', 'Admin', 'Housekeeper'], permissions: ['manage_rooms'] },
+      { title: 'Housekeeping', path: '/admin/housekeeping', roles: ['SuperAdmin', 'Admin', 'Housekeeper'], permissions: ['view_housekeeping'] },
       { title: 'Maintenance', path: '/admin/maintenance', roles: ['SuperAdmin', 'Admin', 'Technician'], permissions: ['view_maintenances'] },
     ],
   },

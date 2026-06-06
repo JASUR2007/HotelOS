@@ -195,6 +195,7 @@ export default function RoomDetails() {
                     <span className="text-xs uppercase tracking-wider text-primary/50">Check In</span>
                     <input
                       type="date"
+                      min={new Date().toISOString().split('T')[0]}
                       className="mt-1 w-full border border-primary/10 px-3 py-2.5 text-sm outline-none focus:border-accent"
                       value={checkIn}
                       onChange={(e) => setCheckIn(e.target.value)}
@@ -204,6 +205,7 @@ export default function RoomDetails() {
                     <span className="text-xs uppercase tracking-wider text-primary/50">Check Out</span>
                     <input
                       type="date"
+                      min={checkIn || new Date().toISOString().split('T')[0]}
                       className="mt-1 w-full border border-primary/10 px-3 py-2.5 text-sm outline-none focus:border-accent"
                       value={checkOut}
                       onChange={(e) => setCheckOut(e.target.value)}

@@ -41,7 +41,7 @@ function App() {
             <Route path="bookings" element={<ProtectedRoute requiredPermissions={['create_booking']}><Bookings /></ProtectedRoute>} />
             <Route path="orders" element={<ProtectedRoute requiredPermissions={['create_orders']}><Orders /></ProtectedRoute>} />
             <Route path="maintenance" element={<ProtectedRoute requiredPermissions={['view_maintenances']}><Maintenance /></ProtectedRoute>} />
-            <Route path="housekeeping" element={<ProtectedRoute requiredPermissions={['manage_rooms']}><HousekeepingPage /></ProtectedRoute>} />
+            <Route path="housekeeping" element={<ProtectedRoute requiredPermissions={['view_housekeeping']}><HousekeepingPage /></ProtectedRoute>} />
             <Route path="reports" element={<ProtectedRoute requiredPermissions={['view_reports']}><Reports /></ProtectedRoute>} />
             <Route path="notifications" element={<ProtectedRoute allowedRoles={[]}><NotificationsPage /></ProtectedRoute>} />
             <Route path="payments" element={<ProtectedRoute requiredPermissions={['manage_payments']}><Payments /></ProtectedRoute>} />

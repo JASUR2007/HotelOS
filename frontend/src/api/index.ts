@@ -434,6 +434,7 @@ export async function guestCheckIn(data: {
 	kids: number;
 	checkInDate: string;
 	checkOutDate: string;
+	roomId?: number;
 }): Promise<{ bookingId: number; roomId: number; status: string; guestName: string }> {
 	const response = await fetch(`${apiBaseUrl}/reception/check-in`, {
 		method: 'POST',

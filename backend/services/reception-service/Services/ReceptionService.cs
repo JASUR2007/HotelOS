@@ -27,7 +27,7 @@ public sealed class ReceptionService(
             throw new InvalidOperationException("Guest already has an active booking for the requested period.");
         }
 
-        var roomId = await AssignRoomAsync(request.Adults + request.Kids, cancellationToken);
+        var roomId = request.RoomId ?? await AssignRoomAsync(request.Adults + request.Kids, cancellationToken);
 
         var booking = await bookingRepository.AddAsync(new Booking
         {
