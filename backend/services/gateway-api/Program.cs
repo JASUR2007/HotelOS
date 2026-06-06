@@ -1,3 +1,4 @@
+using HotelOS.GatewayApi.Consumers;
 using HotelOS.GatewayApi.Data;
 using HotelOS.GatewayApi.Health;
 using HotelOS.GatewayApi.Middleware;
@@ -106,6 +107,7 @@ builder.Services.AddDbContext<GatewayDbContext>(options =>
 builder.Services.AddScoped<IGatewayRepository, GatewayRepository>();
 builder.Services.AddScoped<IGatewayService, GatewayService>();
 builder.Services.AddScoped<IEventLogRepository, EventLogRepository>();
+builder.Services.AddHostedService<AuditLogConsumer>();
 
 var app = builder.Build();
 

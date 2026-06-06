@@ -17,7 +17,7 @@ public sealed class MaintenanceService(
 {
     public async Task<IReadOnlyList<MaintenanceIssueDto>> GetIssuesAsync(CancellationToken cancellationToken = default)
         => (await repository.GetAllAsync(cancellationToken))
-            .Select(issue => new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Priority, issue.Status, issue.TechnicianName))
+            .Select(issue => new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Category, issue.Priority, issue.Status, issue.TechnicianName))
             .ToList();
 
     public async Task<MaintenanceIssueDto> CreateIssueAsync(CreateIssueDto request, CancellationToken cancellationToken = default)
@@ -26,6 +26,7 @@ public sealed class MaintenanceService(
         {
             RoomNumber = request.RoomNumber,
             Title = request.Title,
+            Category = request.Category,
             Priority = request.Priority,
             Status = "Queued"
         }, cancellationToken);
@@ -46,7 +47,7 @@ public sealed class MaintenanceService(
         auditLogger.Log("Staff", "Created Maintenance", $"Issue #{issue.Id}", $"{issue.Title} (Room {issue.RoomNumber}, {issue.Priority})");
 
         _ = new MaintenanceIssueRaisedEvent(issue.Id, issue.RoomNumber, DateTimeOffset.UtcNow);
-        return new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Priority, issue.Status, issue.TechnicianName);
+        return new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Category, issue.Priority, issue.Status, issue.TechnicianName);
     }
 
     public async Task<MaintenanceIssueDto> AssignTechnicianAsync(AssignTechnicianDto request, CancellationToken cancellationToken = default)
@@ -80,7 +81,7 @@ public sealed class MaintenanceService(
         auditLogger.Log("Staff", "Assigned Technician", $"Issue #{issue.Id}", $"→ {request.TechnicianName}");
 
         _ = new MaintenanceIssueAssignedEvent(issue.Id, request.TechnicianName, DateTimeOffset.UtcNow);
-        return new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Priority, issue.Status, request.TechnicianName);
+        return new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Category, issue.Priority, issue.Status, request.TechnicianName);
     }
 
     public async Task<MaintenanceIssueDto> UpdateIssueAsync(int id, UpdateIssueDto request, CancellationToken cancellationToken = default)
@@ -109,7 +110,7 @@ public sealed class MaintenanceService(
 
         auditLogger.Log("Staff", "Updated Maintenance", $"Issue #{issue.Id}", $"{issue.Title} (Status: {issue.Status}, Priority: {issue.Priority})");
 
-        return new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Priority, issue.Status, issue.TechnicianName);
+        return new MaintenanceIssueDto(issue.Id, issue.RoomNumber, issue.Title, issue.Category, issue.Priority, issue.Status, issue.TechnicianName);
     }
 
     public async Task DeleteIssueAsync(int id, CancellationToken cancellationToken = default)

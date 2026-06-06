@@ -17,7 +17,7 @@ export default function AuditLogs() {
           <div key={log.id} className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <strong>{log.actor}</strong>
-              <span className="text-xs uppercase tracking-[0.22em] text-primary/40">{log.createdAt}</span>
+              <span className="text-xs uppercase tracking-[0.22em] text-black">{log.createdAt}</span>
             </div>
             <p className="mt-2 text-sm text-primary/65">{log.action}</p>
             <p className="mt-1 text-sm text-primary/50">{log.entity}</p>

@@ -25,6 +25,7 @@ public sealed class PaymentDbContext(DbContextOptions<PaymentDbContext> options)
         {
             entity.ToTable("invoices");
             entity.HasKey(item => item.Id);
+            entity.Property(item => item.Id).ValueGeneratedOnAdd().UseIdentityColumn();
             entity.Property(item => item.InvoiceNumber).HasMaxLength(50).IsRequired();
             entity.Property(item => item.GuestName).HasMaxLength(200).IsRequired();
             entity.Property(item => item.RoomNumber).HasMaxLength(20).IsRequired();
@@ -38,6 +39,7 @@ public sealed class PaymentDbContext(DbContextOptions<PaymentDbContext> options)
         {
             entity.ToTable("payments");
             entity.HasKey(item => item.Id);
+            entity.Property(item => item.Id).ValueGeneratedOnAdd().UseIdentityColumn();
             entity.Property(item => item.Method).HasMaxLength(50).IsRequired();
             entity.Property(item => item.Status).HasMaxLength(50).IsRequired();
             entity.Property(item => item.Amount).HasPrecision(12, 2);

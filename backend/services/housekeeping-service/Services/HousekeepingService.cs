@@ -19,6 +19,14 @@ public sealed class HousekeepingService(IHousekeepingRepository repository, IEve
         var task = await repository.GetByIdAsync(request.TaskId, cancellationToken)
             ?? throw new InvalidOperationException("Cleaning task not found");
 
+        var transition = $"{task.Status}->{request.Status}";
+        if (!ValidTransitions.Contains(transition) && request.Status != task.Status)
+        {
+            throw new InvalidOperationException(
+                $"Invalid status transition: {task.Status} → {request.Status}. " +
+                $"Valid transitions: {string.Join(", ", ValidTransitions)}.");
+        }
+
         task.Status = request.Status;
         task.AssignedTo = request.AssignedTo;
         await repository.SaveChangesAsync(cancellationToken);
@@ -77,13 +85,28 @@ public sealed class HousekeepingService(IHousekeepingRepository repository, IEve
         return new CleaningTaskDto(task.Id, task.RoomId, task.RoomNumber, task.Status, task.AssignedTo, task.Priority);
     }
 
+    private static readonly HashSet<string> ValidTransitions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Queued->InProgress",
+        "InProgress->Completed"
+    };
+
     public async Task<CleaningTaskDto> UpdateTaskAsync(int id, UpdateCleaningTaskDto request, CancellationToken cancellationToken = default)
     {
         var task = await repository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("Cleaning task not found");
 
         if (request.Status is not null)
+        {
+            var transition = $"{task.Status}->{request.Status}";
+            if (!ValidTransitions.Contains(transition) && request.Status != task.Status)
+            {
+                throw new InvalidOperationException(
+                    $"Invalid status transition: {task.Status} → {request.Status}. " +
+                    $"Valid transitions: {string.Join(", ", ValidTransitions)}.");
+            }
             task.Status = request.Status;
+        }
         if (request.AssignedTo is not null)
             task.AssignedTo = request.AssignedTo;
 

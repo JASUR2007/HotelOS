@@ -250,6 +250,7 @@ export type PermissionName =
   | 'view_dashboard'
   | 'view_settings'
   | 'view_maintenances'
+  | 'view_housekeeping'
   | 'manage_payments'
   | 'view_reports'
   | 'view_audit_logs'

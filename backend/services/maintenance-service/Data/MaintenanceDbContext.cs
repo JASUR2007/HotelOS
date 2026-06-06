@@ -24,6 +24,7 @@ public sealed class MaintenanceDbContext(DbContextOptions<MaintenanceDbContext> 
             entity.HasKey(item => item.Id);
             entity.Property(item => item.RoomNumber).HasMaxLength(20).IsRequired();
             entity.Property(item => item.Title).HasMaxLength(200).IsRequired();
+            entity.Property(item => item.Category).HasMaxLength(50).HasDefaultValue("General");
             entity.Property(item => item.Priority).HasMaxLength(20).IsRequired();
             entity.Property(item => item.Status).HasMaxLength(50).IsRequired();
             entity.HasIndex(item => new { item.Priority, item.Status });

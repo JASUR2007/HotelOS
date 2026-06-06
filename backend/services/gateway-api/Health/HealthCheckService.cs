@@ -55,7 +55,7 @@ public sealed class HealthCheckService(GatewayDbContext dbContext, IConfiguratio
         try
         {
             var client = httpClientFactory.CreateClient();
-            var websocketBaseUrl = configuration["Services:Websocket"] ?? "http://websocket-service:8080";
+            var websocketBaseUrl = configuration["Services:Websocket"] ?? "http://websocket-service:8081";
             var response = await client.GetAsync(new Uri(new Uri(websocketBaseUrl), "/health"), cancellationToken);
             return new ServiceHealthSnapshot("websocket", response.IsSuccessStatusCode ? "Healthy" : "Unhealthy", DateTimeOffset.UtcNow, response.IsSuccessStatusCode ? null : $"HTTP {(int)response.StatusCode}");
         }

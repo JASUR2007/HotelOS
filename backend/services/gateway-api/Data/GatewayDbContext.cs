@@ -94,7 +94,13 @@ public sealed class GatewayDbContext(DbContextOptions<GatewayDbContext> options)
                 new ApplicationPermission { Id = 11, Name = "assign_maintenance", Description = "Assign maintenance technicians" },
                 new ApplicationPermission { Id = 12, Name = "view_dashboard", Description = "View admin dashboard" },
                 new ApplicationPermission { Id = 13, Name = "manage_payments", Description = "Manage payments and billing" },
-                new ApplicationPermission { Id = 14, Name = "view_reports", Description = "View and export reports" }
+                new ApplicationPermission { Id = 14, Name = "view_reports", Description = "View and export reports" },
+                new ApplicationPermission { Id = 15, Name = "manage_workers", Description = "Monitor workforce status" },
+                new ApplicationPermission { Id = 16, Name = "view_maintenances", Description = "View maintenance requests" },
+                new ApplicationPermission { Id = 17, Name = "view_housekeeping", Description = "View housekeeping status" },
+                new ApplicationPermission { Id = 18, Name = "view_audit_logs", Description = "View audit logs" },
+                new ApplicationPermission { Id = 19, Name = "view_event_logs", Description = "View event logs" },
+                new ApplicationPermission { Id = 20, Name = "process_refunds", Description = "Process refunds" }
             );
         });
 

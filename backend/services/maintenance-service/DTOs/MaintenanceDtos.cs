@@ -2,11 +2,12 @@ namespace HotelOS.MaintenanceService.DTOs;
 
 public sealed record MaintenanceIssueDto
 {
-    public MaintenanceIssueDto(int id, string roomNumber, string title, string priority, string status, string? technicianName)
+    public MaintenanceIssueDto(int id, string roomNumber, string title, string category, string priority, string status, string? technicianName)
     {
         Id = id;
         RoomNumber = roomNumber;
         Title = title;
+        Category = category;
         Priority = priority;
         Status = status;
         TechnicianName = technicianName;
@@ -15,6 +16,7 @@ public sealed record MaintenanceIssueDto
     public int Id { get; init; }
     public string RoomNumber { get; init; }
     public string Title { get; init; }
+    public string Category { get; init; }
     public string Priority { get; init; }
     public string Status { get; init; }
     public string? TechnicianName { get; init; }
@@ -24,6 +26,7 @@ public sealed record CreateIssueDto
 {
     public string RoomNumber { get; init; } = string.Empty;
     public string Title { get; init; } = string.Empty;
+    public string Category { get; init; } = "General";
     public string Priority { get; init; } = string.Empty;
 }
 

@@ -81,7 +81,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
-app.MapHub<NotificationsHub>("/notifications").RequireAuthorization();
+app.MapHub<NotificationsHub>("/notifications");
 app.MapHealthChecks("/health");
 
 await StartupTaskRunner.RunAsync("websocket database migration", () => DbInitializer.InitializeAsync(app.Services), app.Logger);

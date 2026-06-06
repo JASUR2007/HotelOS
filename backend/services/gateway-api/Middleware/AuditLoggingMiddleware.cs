@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HotelOS.GatewayApi.Models;
 using HotelOS.GatewayApi.Repositories;
 
@@ -35,6 +36,7 @@ public sealed class AuditLoggingMiddleware(RequestDelegate next)
                   ?? context.User.FindFirst("nameid")?.Value
                   ?? string.Empty;
         var userName = context.User.Identity?.Name
+                    ?? context.User.FindFirst(ClaimTypes.Name)?.Value
                     ?? context.User.FindFirst("email")?.Value
                     ?? "system";
         var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? string.Empty;

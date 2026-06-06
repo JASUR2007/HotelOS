@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, type FormEvent } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useWebsocketStatus } from '../hooks/useWebsocketStatus';
 import { useNotificationStore } from '../store/notificationStore';
 import { fetchNotifications } from '../../api';
-import { Bell, Circle, Search } from '../../components/SimpleIcons';
+import { Bell, Circle } from '../../components/SimpleIcons';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -18,31 +18,10 @@ export default function Header() {
   const addNotification = useNotificationStore((s) => s.addNotification);
   const clearAll = useNotificationStore((s) => s.clearAll);
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [notifOpen, setNotifOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
-
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const query = searchQuery.trim();
-    if (!query) return;
-
-    const lower = query.toLowerCase();
-    let path = '/admin/dashboard';
-    if (lower.includes('room')) path = '/admin/rooms';
-    if (lower.includes('guest')) path = '/admin/bookings';
-    if (lower.includes('booking') || lower.includes('reservation')) path = '/admin/bookings';
-    if (lower.includes('order') || lower.includes('food')) path = '/admin/orders';
-    if (lower.includes('maintenance') || lower.includes('ticket')) path = '/admin/maintenance';
-    if (lower.includes('clean') || lower.includes('housekeeping')) path = '/admin/housekeeping';
-    if (lower.includes('payment') || lower.includes('invoice')) path = '/admin/payments';
-    if (lower.includes('user') || lower.includes('role') || lower.includes('permission')) path = '/admin/users';
-    if (lower.includes('notification')) path = '/admin/notifications';
-
-    navigate(`${path}?q=${encodeURIComponent(query)}`);
-  }
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -84,20 +63,6 @@ export default function Header() {
           >
             Home
           </button>
-          <div className="hidden border-l border-primary/10 pl-4 lg:block">
-            <p className="text-xs uppercase tracking-[0.24em] text-accent">GrandStay Hotel</p>
-            <p className="text-sm font-semibold text-primary">Admin Dashboard</p>
-          </div>
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
-              placeholder="Search rooms, guests, bookings..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-72 rounded-lg border border-primary/10 bg-[#f5efe7] px-4 py-2 pl-10 text-sm text-primary outline-none focus:border-accent focus:bg-white"
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/30"><Search className="inline-block" /></span>
-          </form>
         </div>
 
         <div className="flex items-center gap-3">

@@ -22,6 +22,7 @@ public static class PermissionSeeder
         ("view_dashboard", "View dashboard"),
         ("view_settings", "View settings"),
         ("view_maintenances", "View maintenances"),
+        ("view_housekeeping", "View housekeeping"),
         ("manage_payments", "Manage payments"),
         ("view_reports", "View reports"),
         ("view_audit_logs", "View audit logs"),

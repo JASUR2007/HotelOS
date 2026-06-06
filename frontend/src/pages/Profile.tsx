@@ -26,6 +26,7 @@ interface MyMaintenance {
   id: number;
   roomNumber: string;
   title: string;
+  category: string;
   priority: string;
   status: string;
 }
@@ -49,6 +50,7 @@ export default function Profile() {
 
   const [maintRoom, setMaintRoom] = useState('');
   const [maintTitle, setMaintTitle] = useState('');
+  const [maintCategory, setMaintCategory] = useState('General');
   const [maintDesc, setMaintDesc] = useState('');
   const [maintStatus, setMaintStatus] = useState('');
   const [cancelStatus, setCancelStatus] = useState('');
@@ -168,7 +170,7 @@ export default function Profile() {
           'Content-Type': 'application/json',
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
-        body: JSON.stringify({ roomNumber: maintRoom, title: maintTitle, description: maintDesc, priority: 'Medium' }),
+        body: JSON.stringify({ roomNumber: maintRoom, title: maintTitle, category: maintCategory, description: maintDesc, priority: 'Medium' }),
       });
       if (!res.ok) throw new Error('Failed to submit request');
       setMaintStatus('Maintenance request submitted!');
@@ -444,6 +446,20 @@ export default function Profile() {
                   value={maintTitle} onChange={e => setMaintTitle(e.target.value)} placeholder="AC not working" required />
               </label>
               <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">
+                Issue Type
+                <select className="mt-2 w-full border border-primary/10 bg-white px-4 py-3 outline-none text-primary focus:border-accent"
+                  value={maintCategory} onChange={e => setMaintCategory(e.target.value)}>
+                  <option value="General">General</option>
+                  <option value="Plumbing">Plumbing</option>
+                  <option value="Electrical">Electrical</option>
+                  <option value="HVAC">HVAC</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Cleaning">Cleaning</option>
+                  <option value="Noise">Noise Complaint</option>
+                  <option value="Safety">Safety Hazard</option>
+                </select>
+              </label>
+              <label className="block text-sm uppercase tracking-[0.25em] text-primary/50">
                 Description
                 <textarea className="mt-2 w-full border border-primary/10 px-4 py-3 outline-none focus:border-accent" rows={3}
                   value={maintDesc} onChange={e => setMaintDesc(e.target.value)} placeholder="Describe the issue..." />
@@ -463,7 +479,7 @@ export default function Profile() {
                   <div key={item.id} className="flex justify-between items-center border border-primary/10 p-4">
                     <div>
                       <p className="font-semibold">{item.title}</p>
-                      <p className="text-sm text-primary/50">Room {item.roomNumber}</p>
+                      <p className="text-sm text-primary/50">Room {item.roomNumber} · {item.category}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${

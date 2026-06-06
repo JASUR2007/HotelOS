@@ -14,8 +14,8 @@ public static class PaymentSeeder
         }
 
         context.Payments.AddRange(
-            new Payment { Id = 1, InvoiceId = 1, Amount = 420m, Method = "Card", Status = "Completed", ProcessedAt = DateTimeOffset.UtcNow.AddDays(-2) },
-            new Payment { Id = 2, InvoiceId = 3, Amount = 320m, Method = "Cash", Status = "Completed", ProcessedAt = DateTimeOffset.UtcNow.AddDays(-1) }
+            new Payment { InvoiceId = 1, Amount = 420m, Method = "Card", Status = "Completed", ProcessedAt = DateTimeOffset.UtcNow.AddDays(-2) },
+            new Payment { InvoiceId = 3, Amount = 320m, Method = "Cash", Status = "Completed", ProcessedAt = DateTimeOffset.UtcNow.AddDays(-1) }
         );
 
         await context.SaveChangesAsync();

@@ -19,30 +19,39 @@ export default function RoomsPage() {
 		fetchBookingsAdmin().then(setAllBookings).catch(() => {});
 	}, []);
 
-	const bookedRoomNumbers = useMemo(() => {
-		if (!checkIn || !checkOut) return new Set<string>();
+	const bookOverlap = useMemo(() => {
+		const set = new Set<string>();
+		if (!checkIn || !checkOut) return set;
 		const ci = new Date(`${checkIn}T00:00:00`);
 		const co = new Date(`${checkOut}T00:00:00`);
-		if (Number.isNaN(ci.getTime()) || Number.isNaN(co.getTime())) return new Set<string>();
-		const booked = new Set<string>();
+		if (Number.isNaN(ci.getTime()) || Number.isNaN(co.getTime())) return set;
 		for (const b of allBookings) {
 			if (b.status === 'Cancelled' || b.status === 'CheckedOut') continue;
 			const bci = new Date(`${b.checkInDate}T00:00:00`);
 			const bco = new Date(`${b.checkOutDate}T00:00:00`);
 			if (Number.isNaN(bci.getTime()) || Number.isNaN(bco.getTime())) continue;
-			if (bci < co && bco > ci) {
-				booked.add(String(b.roomNumber));
-			}
+			if (bci < co && bco > ci) set.add(String(b.roomNumber));
 		}
-		return booked;
+		return set;
 	}, [allBookings, checkIn, checkOut]);
 
+	const allActiveBookings = useMemo(() => {
+		const set = new Set<string>();
+		for (const b of allBookings) {
+			if (b.status === 'Cancelled' || b.status === 'CheckedOut') continue;
+			set.add(String(b.roomNumber));
+		}
+		return set;
+	}, [allBookings]);
+
 	const filtered = rooms.filter((r) => {
+		const isNumeric = /^\d+$/.test(search.trim());
 		const matchesSearch = !search.trim() || r.roomNumber.includes(search) || (r as any).type?.toLowerCase().includes(search.toLowerCase());
 		const matchesGuests = total <= r.guestCapacity;
 		const isAvailable = r.status === 'Available';
-		const noBookingOverlap = !checkIn || !checkOut || !bookedRoomNumbers.has(String(r.roomNumber));
-		return matchesSearch && matchesGuests && isAvailable && noBookingOverlap;
+		const dateConflict = bookOverlap.has(String(r.roomNumber));
+		const anyConflict = isNumeric && allActiveBookings.has(String(r.roomNumber));
+		return matchesSearch && matchesGuests && isAvailable && !dateConflict && !anyConflict;
 	});
 
 	return (

@@ -16,8 +16,11 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
 
             if (exception is ArgumentException || exception is InvalidOperationException || exception is DbUpdateException)
             {
+                var detail = exception.InnerException is not null
+                    ? $"{exception.Message} → {exception.InnerException.Message}"
+                    : exception.Message;
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(new { message = exception.Message });
+                await context.Response.WriteAsJsonAsync(new { message = detail });
                 return;
             }
 

@@ -9,7 +9,7 @@ const ALL_PERMISSIONS: PermissionName[] = [
   'manage_rooms', 'manage_users', 'manage_roles', 'manage_permissions',
   'create_orders', 'update_orders',
   'resolve_maintenance', 'assign_maintenance',
-  'view_dashboard', 'view_settings', 'view_maintenances',
+  'view_dashboard', 'view_settings', 'view_maintenances', 'view_housekeeping',
   'manage_payments', 'view_reports',
   'view_audit_logs', 'view_event_logs', 'process_refunds',
 ];

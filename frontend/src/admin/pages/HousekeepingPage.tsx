@@ -13,8 +13,8 @@ interface CleaningTask {
   priority?: string;
 }
 
-const PRIORITIES = ['Low', 'Medium', 'High'];
-const STATUSES = ['Dirty', 'Cleaning', 'Clean', 'Needs Inspection'];
+const PRIORITIES = ['Low', 'Normal', 'High', 'Critical'];
+const STATUSES = ['Queued', 'InProgress', 'Completed'];
 
 interface CreateForm {
   roomNumber: string;
@@ -28,7 +28,7 @@ interface EditForm {
 }
 
 const emptyCreateForm: CreateForm = { roomNumber: '', assignedTo: '', priority: 'Medium' };
-const emptyEditForm: EditForm = { status: 'Dirty', assignedTo: '' };
+const emptyEditForm: EditForm = { status: 'Queued', assignedTo: '' };
 
 export default function HousekeepingPage() {
   const [tasks, setTasks] = useState<CleaningTask[]>([]);

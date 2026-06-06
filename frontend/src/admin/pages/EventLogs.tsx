@@ -17,7 +17,7 @@ export default function EventLogs() {
           <div key={log.id} className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <strong>{log.eventName}</strong>
-              <span className="text-xs uppercase tracking-[0.22em] text-primary/40">{log.status}</span>
+              <span className="text-xs uppercase tracking-[0.22em] text-black">{log.status}</span>
             </div>
             <p className="mt-2 text-sm text-primary/65">Routing key: {log.routingKey}</p>
             <p className="mt-1 text-sm text-primary/50">{log.createdAt}</p>
