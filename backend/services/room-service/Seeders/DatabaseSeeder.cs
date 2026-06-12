@@ -14,6 +14,7 @@ public static class DatabaseSeeder
         await MenuSeeder.SeedAsync(context);
         await OrderSeeder.SeedAsync(context);
         await RoomSeeder.SeedAsync(context, logger);
+        await RoomKeySeeder.SeedAsync(context, logger);
 
         if (scope.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())
         {

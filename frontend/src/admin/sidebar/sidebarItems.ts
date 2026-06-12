@@ -25,6 +25,7 @@ export const sidebarGroups: SidebarGroup[] = [
       { title: 'Bookings', path: '/admin/bookings', roles: ['SuperAdmin', 'Admin', 'Receptionist'], permissions: ['create_booking'] },
       { title: 'Housekeeping', path: '/admin/housekeeping', permissions: ['view_housekeeping'] },
       { title: 'Maintenance', path: '/admin/maintenance', permissions: ['view_maintenances'] },
+      { title: 'Room Keys', path: '/admin/room-keys', roles: ['SuperAdmin', 'Admin', 'Receptionist', 'Housekeeper'], permissions: ['manage_keys'] },
     ],
   },
   {
@@ -60,14 +61,6 @@ export const sidebarGroups: SidebarGroup[] = [
       { title: 'Roles', path: '/admin/roles', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_roles'] },
       { title: 'Permissions', path: '/admin/permissions', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_permissions'] },
       { title: 'Audit Logs', path: '/admin/audit-logs', permissions: ['view_audit_logs'] },
-    ],
-  },
-  {
-    id: 'keys',
-    label: 'Key Management',
-    icon: 'Key',
-    items: [
-      { title: 'Room Keys', path: '/admin/room-keys', roles: ['SuperAdmin', 'Admin', 'Receptionist', 'Housekeeper'], permissions: ['manage_keys'] },
     ],
   },
   {

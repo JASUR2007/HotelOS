@@ -6,6 +6,7 @@ using HotelOS.RoomService.Repositories;
 using HotelOS.RoomService.Seeders;
 using HotelOS.RoomService.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using HotelOS.Shared.Startup;
 using HotelOS.Shared.RabbitMQ;
 using HotelOS.Shared.Audit;
@@ -50,7 +51,8 @@ builder.Services.AddSingleton<IFileStorage>(_ => new LocalFileStorage(imagesPath
 builder.Services.AddDbContext<RoomDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Postgres"),
-        postgresOptions => { postgresOptions.EnableRetryOnFailure(); postgresOptions.MigrationsHistoryTable("__EFMigrationsHistory", "room_service"); }));
+        postgresOptions => { postgresOptions.EnableRetryOnFailure(); postgresOptions.MigrationsHistoryTable("__EFMigrationsHistory", "room_service"); })
+    .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomQueries>(p => p.GetRequiredService<IRoomService>() as RoomService ?? throw new InvalidOperationException());

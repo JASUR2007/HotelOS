@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DataTable, Modal, ConfirmDeleteModal, StatusBadge } from '../components';
 import type { Column } from '../components/DataTable';
-import { fetchRoomKeys, fetchMasterKeys, issueRoomKey, returnRoomKey, markKeyLost, createMasterKey, issueMasterKey, returnMasterKey, deleteRoomKey, deleteMasterKey, fetchRooms } from '../../api';
+import { fetchRoomKeys, fetchMasterKeys, issueRoomKey, returnRoomKey, markKeyLost, createMasterKey, issueMasterKey, returnMasterKey, deleteRoomKey, deleteMasterKey, fetchRooms, fetchGuests, fetchUsers } from '../../api';
 import type { RoomKeyDto, MasterKeyDto, RoomDto } from '../../types';
 
 type Tab = 'room' | 'master';
@@ -11,6 +11,8 @@ export default function RoomKeys() {
   const [keys, setKeys] = useState<RoomKeyDto[]>([]);
   const [masterKeys, setMasterKeys] = useState<MasterKeyDto[]>([]);
   const [rooms, setRooms] = useState<RoomDto[]>([]);
+  const [guests, setGuests] = useState<{ id: number; name: string }[]>([]);
+  const [staff, setStaff] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -41,10 +43,12 @@ export default function RoomKeys() {
   async function load() {
     setLoading(true);
     try {
-      const [k, mk, r] = await Promise.all([fetchRoomKeys(), fetchMasterKeys(), fetchRooms()]);
+      const [k, mk, r, g, u] = await Promise.all([fetchRoomKeys(), fetchMasterKeys(), fetchRooms(), fetchGuests(), fetchUsers()]);
       setKeys(k);
       setMasterKeys(mk);
       setRooms(r);
+      setGuests(g.map((guest: { id: number; name: string }) => ({ id: guest.id, name: guest.name })));
+      setStaff(u.map((user: { id: string; displayName: string }) => ({ id: user.id, name: user.displayName })));
     } catch { setError('Failed to load data'); }
     finally { setLoading(false); }
   }
@@ -241,12 +245,22 @@ export default function RoomKeys() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-primary/60">Issued To (Guest Name)</label>
-            <input value={issueTo} onChange={(e) => setIssueTo(e.target.value)} className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent" />
+            <label className="mb-1 block text-xs font-medium text-primary/60">Issued To (Guest)</label>
+            <select value={issueTo} onChange={(e) => setIssueTo(e.target.value)} className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
+              <option value="">Select guest...</option>
+              {guests.map((g) => (
+                <option key={g.id} value={g.name}>{g.name}</option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-primary/60">Issued By (Staff Name)</label>
-            <input value={issueBy} onChange={(e) => setIssueBy(e.target.value)} className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent" />
+            <label className="mb-1 block text-xs font-medium text-primary/60">Issued By (Staff)</label>
+            <select value={issueBy} onChange={(e) => setIssueBy(e.target.value)} className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
+              <option value="">Select staff...</option>
+              {staff.map((s) => (
+                <option key={s.id} value={s.name}>{s.name}</option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-3">
@@ -290,8 +304,13 @@ export default function RoomKeys() {
 
       <Modal open={showIssueMaster} onClose={() => setShowIssueMaster(false)} title="Issue Master Key" size="sm">
         <div>
-          <label className="mb-1 block text-xs font-medium text-primary/60">Issued To</label>
-          <input value={issueMasterTo} onChange={(e) => setIssueMasterTo(e.target.value)} className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent" />
+          <label className="mb-1 block text-xs font-medium text-primary/60">Issued To (Staff)</label>
+          <select value={issueMasterTo} onChange={(e) => setIssueMasterTo(e.target.value)} className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
+            <option value="">Select staff...</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.name}>{s.name}</option>
+            ))}
+          </select>
         </div>
         <div className="mt-6 flex justify-end gap-3">
           <button onClick={() => setShowIssueMaster(false)} className="rounded-lg border border-primary/10 px-5 py-2.5 text-sm text-primary/60 hover:bg-primary/5">Cancel</button>
