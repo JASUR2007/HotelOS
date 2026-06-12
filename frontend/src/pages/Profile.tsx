@@ -36,7 +36,7 @@ export default function Profile() {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'reservations' | 'orders' | 'maintenance'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'reservations' | 'orders' | 'maintenance' | 'keys'>('profile');
   const [reservations, setReservations] = useState<MyReservation[]>([]);
   const [orders, setOrders] = useState<MyOrder[]>([]);
   const [maintenance, setMaintenance] = useState<MyMaintenance[]>([]);
@@ -55,6 +55,9 @@ export default function Profile() {
   const [maintStatus, setMaintStatus] = useState('');
   const [cancelStatus, setCancelStatus] = useState('');
   const [cancelTarget, setCancelTarget] = useState<number | null>(null);
+  const [myKeys, setMyKeys] = useState<{ id: number; roomNumber: string; keyType: string; status: string; issuedAt: string }[]>([]);
+  const [loadingKeys, setLoadingKeys] = useState(false);
+  const [keyStatus, setKeyStatus] = useState('');
 
   const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
 
@@ -96,6 +99,21 @@ export default function Profile() {
         .then(setMaintenance)
         .catch(() => {})
         .finally(() => setLoadingM(false));
+    }
+  }, [activeTab, activeReservation]);
+
+  useEffect(() => {
+    if (activeTab === 'keys' && activeReservation) {
+      setLoadingKeys(true);
+      const roomNum = activeReservation.roomNumber;
+      fetch(`${apiBaseUrl}/room/keys`)
+        .then(r => r.ok ? r.json() : [])
+        .then((data: any[]) => {
+          const filtered = data.filter((k: any) => k.roomNumber === roomNum && k.status === 'Issued');
+          setMyKeys(filtered.map((k: any) => ({ id: k.id, roomNumber: k.roomNumber, keyType: k.keyType, status: k.status, issuedAt: k.issuedAt ?? '' })));
+        })
+        .catch(() => {})
+        .finally(() => setLoadingKeys(false));
     }
   }, [activeTab, activeReservation]);
 
@@ -200,6 +218,7 @@ export default function Profile() {
     { key: 'reservations', label: 'My Reservations' },
     { key: 'orders', label: 'My Orders' },
     { key: 'maintenance', label: 'Maintenance' },
+    { key: 'keys', label: 'Room Keys' },
   ];
 
   return (
@@ -337,6 +356,13 @@ export default function Profile() {
       {activeTab === 'maintenance' && !activeReservation && (
         <div className="border border-primary/10 bg-white p-8 shadow-sm text-center">
           <p className="text-primary/50 mb-4">You need an active booking to submit maintenance requests.</p>
+          <a href="/rooms" className="btn btn-primary">Book a Room</a>
+        </div>
+      )}
+
+      {activeTab === 'keys' && !activeReservation && (
+        <div className="border border-primary/10 bg-white p-8 shadow-sm text-center">
+          <p className="text-primary/50 mb-4">You need an active booking to access room keys.</p>
           <a href="/rooms" className="btn btn-primary">Book a Room</a>
         </div>
       )}
@@ -490,6 +516,58 @@ export default function Profile() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'keys' && activeReservation && (
+        <div className="space-y-6">
+          <div className="border border-primary/10 bg-white p-8 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">Room Keys — Room #{activeReservation.roomNumber}</h2>
+            {loadingKeys ? (
+              <p className="text-primary/50">Loading...</p>
+            ) : myKeys.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-primary/50 mb-2">No keys currently issued for your room.</p>
+                <p className="text-sm text-primary/40">Visit the reception desk to get your room key.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {myKeys.map(key => (
+                  <div key={key.id} className="flex items-center justify-between border border-primary/10 p-4">
+                    <div>
+                      <p className="font-semibold">Room {key.roomNumber} — {key.keyType} Key</p>
+                      <p className="text-sm text-primary/50">Issued: {key.issuedAt}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">{key.status}</span>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const token = (window as unknown as Record<string, unknown>).__hotelos_auth_store__ as
+                              { getState(): { accessToken?: string } } | undefined;
+                            const accessToken = token?.getState().accessToken ?? '';
+                            const res = await fetch(`${apiBaseUrl}/room/keys/${key.id}/return`, {
+                              method: 'POST',
+                              headers: { ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
+                            });
+                            if (!res.ok) throw new Error();
+                            setKeyStatus(`Key for Room ${key.roomNumber} returned successfully.`);
+                            setMyKeys(prev => prev.filter(k => k.id !== key.id));
+                          } catch {
+                            setKeyStatus('Failed to return key. Please visit the reception desk.');
+                          }
+                        }}
+                        className="rounded-lg border border-accent/30 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/5"
+                      >
+                        Return Key
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {keyStatus && <p className="text-center text-sm text-emerald-700">{keyStatus}</p>}
               </div>
             )}
           </div>

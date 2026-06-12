@@ -163,6 +163,36 @@ export default function Bookings() {
     }
   }
 
+  function handlePrint(target: BookingRecord) {
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`
+      <html><head><title>Booking #${target.id}</title>
+      <style>
+        body { font-family: 'Courier New', monospace; padding: 40px; color: #333; }
+        h1 { font-size: 24px; margin-bottom: 5px; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .hotel { font-size: 14px; color: #666; }
+        .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd; }
+        .label { font-weight: bold; color: #555; }
+        .footer { margin-top: 30px; font-size: 12px; color: #999; text-align: center; }
+      </style></head><body>
+      <div class="header">
+        <h1>HotelOS</h1>
+        <div class="hotel">Booking Confirmation #${target.id}</div>
+      </div>
+      <div class="row"><span class="label">Guest</span><span>${target.guestName}</span></div>
+      <div class="row"><span class="label">Room</span><span>${target.roomNumber}</span></div>
+      <div class="row"><span class="label">Status</span><span>${target.status}</span></div>
+      <div class="row"><span class="label">Check-In</span><span>${target.checkInDate}</span></div>
+      <div class="row"><span class="label">Check-Out</span><span>${target.checkOutDate}</span></div>
+      <div class="row"><span class="label">Total</span><span>$${target.total}</span></div>
+      <div class="footer">Printed on ${new Date().toLocaleString()}</div>
+      <script>window.print();window.close();<\\/script>
+    </body></html>`);
+    win.document.close();
+  }
+
   async function handleCancel(target: BookingRecord) {
     if (!window.confirm(`Cancel booking #${target.id} for ${target.guestName}? This will refund 50% cash.`)) {
       return;
@@ -372,6 +402,12 @@ export default function Bookings() {
                 Cancel
               </button>
             )}
+            <button
+              onClick={() => handlePrint(row)}
+              className="rounded-lg border border-primary/10 px-3 py-1.5 text-xs text-primary/60 hover:bg-primary/5"
+            >
+              Print
+            </button>
             <button
               onClick={() => openEdit(row)}
               className="rounded-lg border border-primary/10 px-3 py-1.5 text-xs text-primary/60 hover:bg-primary/5"

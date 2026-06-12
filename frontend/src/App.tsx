@@ -26,6 +26,8 @@ import {
   NotificationsPage,
   HousekeepingPage,
   AccessDenied,
+  Branches,
+  RoomKeys,
 } from './admin/pages';
 
 function App() {
@@ -48,6 +50,8 @@ function App() {
             <Route path="users" element={<ProtectedRoute requiredPermissions={['manage_users']}><Users /></ProtectedRoute>} />
             <Route path="roles" element={<ProtectedRoute requiredPermissions={['manage_roles']}><Roles /></ProtectedRoute>} />
             <Route path="permissions" element={<ProtectedRoute requiredPermissions={['manage_permissions']}><Permissions /></ProtectedRoute>} />
+            <Route path="branches" element={<ProtectedRoute requiredPermissions={['manage_branches']}><Branches /></ProtectedRoute>} />
+            <Route path="room-keys" element={<ProtectedRoute requiredPermissions={['manage_keys']}><RoomKeys /></ProtectedRoute>} />
             <Route path="audit-logs" element={<ProtectedRoute requiredPermissions={['view_audit_logs']}><AuditLogs /></ProtectedRoute>} />
             <Route path="settings" element={<ProtectedRoute requiredPermissions={['view_settings']}><Settings /></ProtectedRoute>} />
             <Route path="settings/infrastructure/rabbitmq" element={<ProtectedRoute requiredPermissions={['view_settings']}><RabbitMQMonitorPage /></ProtectedRoute>} />

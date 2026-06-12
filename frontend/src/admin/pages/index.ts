@@ -25,3 +25,5 @@ export { default as AccessDenied } from './AccessDenied';
 export { default as InvoicesPage } from './InvoicesPage';
 export { default as RabbitMQMonitorPage } from './RabbitMQMonitorPage';
 export { default as DatabaseMonitorPage } from './DatabaseMonitorPage';
+export { default as Branches } from './Branches';
+export { default as RoomKeys } from './RoomKeys';

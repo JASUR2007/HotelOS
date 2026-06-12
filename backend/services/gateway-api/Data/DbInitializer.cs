@@ -34,6 +34,27 @@ public static class DbInitializer
         await context.Database.ExecuteSqlRawAsync(@"
             UPDATE audit.audit_logs SET ""UserName""='System', ""EntityType""='Startup', ""ServiceName""='gateway-api' WHERE ""Id""=1 AND ""UserName"" IS NULL;");
 
+        // Create branches table if it doesn't exist
+        await context.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS audit.branches (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""Name"" VARCHAR(200) NOT NULL,
+                ""Address"" VARCHAR(500) NOT NULL,
+                ""City"" VARCHAR(100) NOT NULL,
+                ""Country"" VARCHAR(100) NOT NULL,
+                ""Phone"" VARCHAR(50) NOT NULL,
+                ""Email"" VARCHAR(200) NOT NULL,
+                ""Status"" VARCHAR(20) NOT NULL DEFAULT 'Active',
+                ""CreatedAt"" TIMESTAMPTZ NOT NULL DEFAULT now()
+            );
+            CREATE INDEX IF NOT EXISTS ix_branches_name ON audit.branches (""Name"");");
+
+        // Seed default branch
+        await context.Database.ExecuteSqlRawAsync(@"
+            INSERT INTO audit.branches (""Id"", ""Name"", ""Address"", ""City"", ""Country"", ""Phone"", ""Email"", ""Status"", ""CreatedAt"")
+            VALUES (1, 'HotelOS Downtown', '123 Main Street', 'New York', 'USA', '+1-555-0100', 'downtown@hotelos.com', 'Active', now())
+            ON CONFLICT (""Id"") DO NOTHING;");
+
         // Seed missing permissions beyond what the AddAuthRbac migration originally seeded
         await context.Database.ExecuteSqlRawAsync(@"
             INSERT INTO users.permissions (""Id"", ""Name"", ""Description"") VALUES
@@ -42,7 +63,9 @@ public static class DbInitializer
                 (17, 'view_housekeeping', 'View housekeeping status'),
                 (18, 'view_audit_logs', 'View audit logs'),
                 (19, 'view_event_logs', 'View event logs'),
-                (20, 'process_refunds', 'Process refunds')
+                (20, 'process_refunds', 'Process refunds'),
+                (21, 'manage_branches', 'Manage hotel branches'),
+                (22, 'manage_keys', 'Manage room keys and master keys')
             ON CONFLICT (""Id"") DO NOTHING;");
 
         if (await context.AuditLogs.CountAsync() < 3)

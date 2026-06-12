@@ -13,6 +13,7 @@ public sealed class GatewayDbContext(DbContextOptions<GatewayDbContext> options)
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<HotelBranch> Branches => Set<HotelBranch>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -100,7 +101,9 @@ public sealed class GatewayDbContext(DbContextOptions<GatewayDbContext> options)
                 new ApplicationPermission { Id = 17, Name = "view_housekeeping", Description = "View housekeeping status" },
                 new ApplicationPermission { Id = 18, Name = "view_audit_logs", Description = "View audit logs" },
                 new ApplicationPermission { Id = 19, Name = "view_event_logs", Description = "View event logs" },
-                new ApplicationPermission { Id = 20, Name = "process_refunds", Description = "Process refunds" }
+                new ApplicationPermission { Id = 20, Name = "process_refunds", Description = "Process refunds" },
+                new ApplicationPermission { Id = 21, Name = "manage_branches", Description = "Manage hotel branches" },
+                new ApplicationPermission { Id = 22, Name = "manage_keys", Description = "Manage room keys and master keys" }
             );
         });
 
@@ -129,8 +132,9 @@ public sealed class GatewayDbContext(DbContextOptions<GatewayDbContext> options)
                 new RolePermission { RoleId = 1, PermissionId = 7 }, new RolePermission { RoleId = 1, PermissionId = 8 }, new RolePermission { RoleId = 1, PermissionId = 9 },
                 new RolePermission { RoleId = 1, PermissionId = 10 }, new RolePermission { RoleId = 1, PermissionId = 11 }, new RolePermission { RoleId = 1, PermissionId = 12 },
                 new RolePermission { RoleId = 1, PermissionId = 13 }, new RolePermission { RoleId = 1, PermissionId = 14 },
-                new RolePermission { RoleId = 3, PermissionId = 1 }, new RolePermission { RoleId = 3, PermissionId = 2 }, new RolePermission { RoleId = 3, PermissionId = 12 }, new RolePermission { RoleId = 3, PermissionId = 13 },
-                new RolePermission { RoleId = 4, PermissionId = 12 }
+                new RolePermission { RoleId = 1, PermissionId = 21 }, new RolePermission { RoleId = 1, PermissionId = 22 },
+                new RolePermission { RoleId = 3, PermissionId = 1 }, new RolePermission { RoleId = 3, PermissionId = 2 }, new RolePermission { RoleId = 3, PermissionId = 12 }, new RolePermission { RoleId = 3, PermissionId = 13 }, new RolePermission { RoleId = 3, PermissionId = 22 },
+                new RolePermission { RoleId = 4, PermissionId = 12 }, new RolePermission { RoleId = 4, PermissionId = 22 }
             );
         });
 
@@ -140,6 +144,21 @@ public sealed class GatewayDbContext(DbContextOptions<GatewayDbContext> options)
             entity.HasKey(item => item.Id);
             entity.Property(item => item.Token).HasMaxLength(250).IsRequired();
             entity.HasIndex(item => item.Token).IsUnique();
+        });
+
+        modelBuilder.Entity<HotelBranch>(entity =>
+        {
+            entity.ToTable("branches", "audit");
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Name).HasMaxLength(200).IsRequired();
+            entity.Property(item => item.Address).HasMaxLength(500).IsRequired();
+            entity.Property(item => item.City).HasMaxLength(100).IsRequired();
+            entity.Property(item => item.Country).HasMaxLength(100).IsRequired();
+            entity.Property(item => item.Phone).HasMaxLength(50).IsRequired();
+            entity.Property(item => item.Email).HasMaxLength(200).IsRequired();
+            entity.Property(item => item.Status).HasMaxLength(20).IsRequired();
+            entity.Property(item => item.CreatedAt).IsRequired();
+            entity.HasIndex(item => item.Name);
         });
     }
 }

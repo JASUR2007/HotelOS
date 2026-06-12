@@ -9,6 +9,8 @@ public sealed class RoomDbContext(DbContextOptions<RoomDbContext> options) : DbC
     public DbSet<FoodOrder> FoodOrders => Set<FoodOrder>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Amenity> Amenities => Set<Amenity>();
+    public DbSet<RoomKey> RoomKeys => Set<RoomKey>();
+    public DbSet<MasterKey> MasterKeys => Set<MasterKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,6 +83,33 @@ public sealed class RoomDbContext(DbContextOptions<RoomDbContext> options) : DbC
                 new Amenity { Id = 11, Name = "Roll-in Shower", IconUrl = "/images/amenities/shower.svg", Description = "Accessible roll-in shower" },
                 new Amenity { Id = 12, Name = "Butler Service", IconUrl = "/images/amenities/butler.svg", Description = "Dedicated butler service" }
             );
+        });
+
+        modelBuilder.Entity<RoomKey>(entity =>
+        {
+            entity.ToTable("room_keys");
+            entity.HasKey(k => k.Id);
+            entity.Property(k => k.RoomNumber).HasMaxLength(20).IsRequired();
+            entity.Property(k => k.KeyType).HasMaxLength(20).IsRequired();
+            entity.Property(k => k.Status).HasMaxLength(20).IsRequired();
+            entity.Property(k => k.IssuedTo).HasMaxLength(200);
+            entity.Property(k => k.IssuedBy).HasMaxLength(200);
+            entity.Property(k => k.CreatedAt).IsRequired();
+            entity.HasIndex(k => k.RoomId);
+            entity.HasIndex(k => k.Status);
+        });
+
+        modelBuilder.Entity<MasterKey>(entity =>
+        {
+            entity.ToTable("master_keys");
+            entity.HasKey(k => k.Id);
+            entity.Property(k => k.Name).HasMaxLength(200).IsRequired();
+            entity.Property(k => k.Description).HasMaxLength(500);
+            entity.Property(k => k.AccessScope).HasMaxLength(100).IsRequired();
+            entity.Property(k => k.Status).HasMaxLength(20).IsRequired();
+            entity.Property(k => k.IssuedTo).HasMaxLength(200);
+            entity.Property(k => k.CreatedAt).IsRequired();
+            entity.HasIndex(k => k.Name);
         });
     }
 }

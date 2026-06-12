@@ -27,7 +27,9 @@ public static class PermissionSeeder
         ("view_reports", "View reports"),
         ("view_audit_logs", "View audit logs"),
         ("view_event_logs", "View event logs"),
-        ("process_refunds", "Process refunds")
+        ("process_refunds", "Process refunds"),
+        ("manage_branches", "Manage branches"),
+        ("manage_keys", "Manage keys")
     ];
 
     public static async Task SeedAsync(UserDbContext context, CancellationToken cancellationToken = default)

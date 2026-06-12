@@ -8,10 +8,10 @@ public static class RoleSeeder
 {
     private static readonly Dictionary<string, string[]> RolePermissions = new()
     {
-        ["SuperAdmin"] = ["create_booking", "update_booking", "delete_booking", "manage_rooms", "manage_users", "manage_roles", "manage_permissions", "create_orders", "update_orders", "resolve_maintenance", "assign_maintenance", "view_dashboard", "view_settings", "view_maintenances", "view_housekeeping", "manage_payments", "view_reports", "view_audit_logs", "view_event_logs", "process_refunds"],
-        ["Admin"] = ["create_booking", "update_booking", "manage_rooms", "manage_users", "view_dashboard", "view_settings", "view_maintenances", "view_housekeeping", "view_reports", "view_audit_logs"],
-        ["Receptionist"] = ["create_booking", "update_booking", "view_dashboard", "view_maintenances"],
-        ["Housekeeper"] = ["view_dashboard", "view_housekeeping"],
+        ["SuperAdmin"] = ["create_booking", "update_booking", "delete_booking", "manage_rooms", "manage_users", "manage_roles", "manage_permissions", "create_orders", "update_orders", "resolve_maintenance", "assign_maintenance", "view_dashboard", "view_settings", "view_maintenances", "view_housekeeping", "manage_payments", "view_reports", "view_audit_logs", "view_event_logs", "process_refunds", "manage_branches", "manage_keys"],
+        ["Admin"] = ["create_booking", "update_booking", "manage_rooms", "manage_users", "view_dashboard", "view_settings", "view_maintenances", "view_housekeeping", "view_reports", "view_audit_logs", "manage_branches", "manage_keys"],
+        ["Receptionist"] = ["create_booking", "update_booking", "view_dashboard", "view_maintenances", "manage_keys"],
+        ["Housekeeper"] = ["view_dashboard", "view_housekeeping", "manage_keys"],
         ["Technician"] = ["view_dashboard", "view_maintenances"],
         ["KitchenStaff"] = ["view_dashboard"],
         ["Accountant"] = ["view_dashboard", "manage_payments", "view_reports", "process_refunds"],

@@ -57,6 +57,8 @@ builder.Services.AddScoped<IRoomQueries>(p => p.GetRequiredService<IRoomService>
 builder.Services.AddScoped<IRoomCommands>(p => p.GetRequiredService<IRoomService>() as RoomService ?? throw new InvalidOperationException());
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IKeyQueries>(_ => new KeyService(_.GetRequiredService<RoomDbContext>()));
+builder.Services.AddScoped<IKeyCommands>(_ => new KeyService(_.GetRequiredService<RoomDbContext>()));
 builder.Services.AddHostedService<HotelOS.RoomService.Consumers.RabbitMqRoomCleanedConsumer>();
 
 var app = builder.Build();

@@ -44,6 +44,14 @@ export const sidebarGroups: SidebarGroup[] = [
     ],
   },
   {
+    id: 'properties',
+    label: 'Properties',
+    icon: 'Building2',
+    items: [
+      { title: 'Branches', path: '/admin/branches', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_branches'] },
+    ],
+  },
+  {
     id: 'access',
     label: 'Access Control',
     icon: 'Shield',
@@ -52,6 +60,14 @@ export const sidebarGroups: SidebarGroup[] = [
       { title: 'Roles', path: '/admin/roles', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_roles'] },
       { title: 'Permissions', path: '/admin/permissions', roles: ['SuperAdmin', 'Admin'], permissions: ['manage_permissions'] },
       { title: 'Audit Logs', path: '/admin/audit-logs', permissions: ['view_audit_logs'] },
+    ],
+  },
+  {
+    id: 'keys',
+    label: 'Key Management',
+    icon: 'Key',
+    items: [
+      { title: 'Room Keys', path: '/admin/room-keys', roles: ['SuperAdmin', 'Admin', 'Receptionist', 'Housekeeper'], permissions: ['manage_keys'] },
     ],
   },
   {

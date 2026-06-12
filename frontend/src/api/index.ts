@@ -26,6 +26,11 @@ import type {
 	UpdateRoomDto,
 	AmenityDto,
 	UserRole,
+	HotelBranch,
+	CreateBranchDto,
+	UpdateBranchDto,
+	RoomKeyDto,
+	MasterKeyDto,
 } from '../types';
 
 const apiBaseUrl = import.meta.env.VITE_HOTEL_API_URL ?? '/api';
@@ -497,4 +502,154 @@ export function refreshAdminToken(refreshToken: string) {
 		method: 'POST',
 		body: JSON.stringify({ refreshToken }),
 	});
+}
+
+// --- Branch API ---
+
+export async function fetchBranches(): Promise<HotelBranch[]> {
+	try {
+		const res = await fetch(`${apiBaseUrl}/admin/branches`, {
+			headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		});
+		if (!res.ok) return [];
+		return res.json();
+	} catch {
+		return [
+			{ id: 1, name: 'HotelOS Downtown', address: '123 Main Street', city: 'New York', country: 'USA', phone: '+1-555-0100', email: 'downtown@hotelos.com', status: 'Active', createdAt: '2026-01-15 09:00' },
+			{ id: 2, name: 'HotelOS Airport', address: '456 Aviation Blvd', city: 'New York', country: 'USA', phone: '+1-555-0200', email: 'airport@hotelos.com', status: 'Active', createdAt: '2026-03-01 10:00' },
+		];
+	}
+}
+
+export async function createBranch(data: CreateBranchDto): Promise<HotelBranch> {
+	const response = await fetch(`${apiBaseUrl}/admin/branches`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		body: JSON.stringify(data),
+	});
+	if (!response.ok) throw new Error('Failed to create branch');
+	return response.json();
+}
+
+export async function updateBranch(id: number, data: UpdateBranchDto): Promise<HotelBranch> {
+	const response = await fetch(`${apiBaseUrl}/admin/branches/${id}`, {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		body: JSON.stringify(data),
+	});
+	if (!response.ok) throw new Error('Failed to update branch');
+	return response.json();
+}
+
+export async function deleteBranch(id: number): Promise<void> {
+	const response = await fetch(`${apiBaseUrl}/admin/branches/${id}`, {
+		method: 'DELETE',
+		headers: { ...getAuthHeaders() },
+	});
+	if (!response.ok) throw new Error('Failed to delete branch');
+}
+
+// --- Room Key API ---
+
+export async function fetchRoomKeys(): Promise<RoomKeyDto[]> {
+	try {
+		const res = await fetch(`${apiBaseUrl}/room/keys`, {
+			headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		});
+		if (!res.ok) return [];
+		return res.json();
+	} catch {
+		return [
+			{ id: 1, roomId: 1, roomNumber: '101', keyType: 'Room', status: 'Issued', issuedTo: 'Amelia Stone', issuedBy: 'Reception Desk', issuedAt: '2026-06-10 14:00', returnedAt: null, createdAt: '2026-06-10 14:00' },
+			{ id: 2, roomId: 2, roomNumber: '102', keyType: 'Room', status: 'Available', issuedTo: null, issuedBy: null, issuedAt: null, returnedAt: null, createdAt: '2026-01-01 00:00' },
+		];
+	}
+}
+
+export async function fetchMasterKeys(): Promise<MasterKeyDto[]> {
+	try {
+		const res = await fetch(`${apiBaseUrl}/room/keys/master`, {
+			headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		});
+		if (!res.ok) return [];
+		return res.json();
+	} catch {
+		return [
+			{ id: 1, name: 'Floor 1 Master', description: 'Opens all rooms on floor 1', accessScope: '1', status: 'Available', issuedTo: null, issuedAt: null, returnedAt: null, createdAt: '2026-01-01 00:00' },
+			{ id: 2, name: 'Suite Master', description: 'Opens all suite rooms', accessScope: 'Suite', status: 'Issued', issuedTo: 'Housekeeping Lead', issuedAt: '2026-06-10 08:00', returnedAt: null, createdAt: '2026-01-01 00:00' },
+		];
+	}
+}
+
+export async function issueRoomKey(data: { roomId: number; roomNumber: string; issuedTo: string; issuedBy: string }): Promise<RoomKeyDto> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/issue`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		body: JSON.stringify(data),
+	});
+	if (!response.ok) throw new Error('Failed to issue key');
+	return response.json();
+}
+
+export async function returnRoomKey(keyId: number): Promise<RoomKeyDto> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/${keyId}/return`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+	});
+	if (!response.ok) throw new Error('Failed to return key');
+	return response.json();
+}
+
+export async function markKeyLost(keyId: number): Promise<RoomKeyDto> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/${keyId}/lost`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+	});
+	if (!response.ok) throw new Error('Failed to mark key as lost');
+	return response.json();
+}
+
+export async function createMasterKey(data: { name: string; description: string; accessScope: string }): Promise<MasterKeyDto> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/master`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		body: JSON.stringify(data),
+	});
+	if (!response.ok) throw new Error('Failed to create master key');
+	return response.json();
+}
+
+export async function issueMasterKey(id: number, data: { issuedTo: string }): Promise<MasterKeyDto> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/master/${id}/issue`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+		body: JSON.stringify(data),
+	});
+	if (!response.ok) throw new Error('Failed to issue master key');
+	return response.json();
+}
+
+export async function returnMasterKey(id: number): Promise<MasterKeyDto> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/master/${id}/return`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+	});
+	if (!response.ok) throw new Error('Failed to return master key');
+	return response.json();
+}
+
+export async function deleteRoomKey(keyId: number): Promise<void> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/${keyId}`, {
+		method: 'DELETE',
+		headers: { ...getAuthHeaders() },
+	});
+	if (!response.ok) throw new Error('Failed to delete key');
+}
+
+export async function deleteMasterKey(id: number): Promise<void> {
+	const response = await fetch(`${apiBaseUrl}/room/keys/master/${id}`, {
+		method: 'DELETE',
+		headers: { ...getAuthHeaders() },
+	});
+	if (!response.ok) throw new Error('Failed to delete master key');
 }

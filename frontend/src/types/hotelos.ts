@@ -235,6 +235,56 @@ export type UserRole =
   | 'Accountant'
   | 'Guest';
 
+export interface HotelBranch {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  country: string;
+  phone: string;
+  email: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface CreateBranchDto {
+  name: string;
+  address: string;
+  city: string;
+  country: string;
+  phone: string;
+  email: string;
+}
+
+export interface UpdateBranchDto extends CreateBranchDto {
+  status: string;
+}
+
+export interface RoomKeyDto {
+  id: number;
+  roomId: number;
+  roomNumber: string;
+  keyType: string;
+  status: string;
+  issuedTo: string | null;
+  issuedBy: string | null;
+  issuedAt: string | null;
+  returnedAt: string | null;
+  createdAt: string;
+}
+
+export interface MasterKeyDto {
+  id: number;
+  name: string;
+  description: string;
+  accessScope: string;
+  status: string;
+  issuedTo: string | null;
+  issuedAt: string | null;
+  returnedAt: string | null;
+  createdAt: string;
+}
+
 export type PermissionName =
   | 'create_booking'
   | 'update_booking'
@@ -255,7 +305,9 @@ export type PermissionName =
   | 'view_reports'
   | 'view_audit_logs'
   | 'view_event_logs'
-  | 'process_refunds';
+  | 'process_refunds'
+  | 'manage_branches'
+  | 'manage_keys';
 
 export interface AuthUser {
   id: string;
