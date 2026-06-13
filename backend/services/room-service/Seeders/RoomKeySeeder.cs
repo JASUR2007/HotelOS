@@ -21,6 +21,7 @@ public static class RoomKeySeeder
 
         var keys = rooms.Select(room => new RoomKey
         {
+            BranchId = room.BranchId,
             RoomId = room.Id,
             RoomNumber = room.RoomNumber,
             KeyType = "Room",

@@ -355,12 +355,12 @@ export async function fetchRecommendedRooms(): Promise<RoomDto[]> {
     });
     if (!response.ok) throw new Error('Failed');
     const overview = await response.json();
-    return (overview ?? []).slice(0, 3).map((r: any) => ({ id: r.id, roomNumber: r.roomNumber, type: 'Standard', status: r.status, pricePerNight: 150, floor: 1, description: 'Recommended room', guestCapacity: 2, mainImage: '', images: [], amenities: [] }));
+    return (overview ?? []).slice(0, 3).map((r: any) => ({ id: r.id, branchId: r.branchId ?? 1, roomNumber: r.roomNumber, type: 'Standard', status: r.status, pricePerNight: 150, floor: 1, description: 'Recommended room', guestCapacity: 2, mainImage: '', images: [], amenities: [] }));
   } catch {
     return [
-      { id: 101, roomNumber: '101', type: 'Deluxe', status: 'Available', pricePerNight: 220, floor: 2, description: 'Spacious room with city view', guestCapacity: 2, mainImage: '', images: [], amenities: [] },
-      { id: 207, roomNumber: '207', type: 'Suite', status: 'Available', pricePerNight: 320, floor: 3, description: 'Premium suite with panoramic view', guestCapacity: 3, mainImage: '', images: [], amenities: [] },
-      { id: 305, roomNumber: '305', type: 'Standard', status: 'Available', pricePerNight: 150, floor: 3, description: 'Cozy room with essential amenities', guestCapacity: 2, mainImage: '', images: [], amenities: [] },
+      { id: 101, branchId: 1, roomNumber: '101', type: 'Deluxe', status: 'Available', pricePerNight: 220, floor: 2, description: 'Spacious room with city view', guestCapacity: 2, mainImage: '', images: [], amenities: [] },
+      { id: 207, branchId: 1, roomNumber: '207', type: 'Suite', status: 'Available', pricePerNight: 320, floor: 3, description: 'Premium suite with panoramic view', guestCapacity: 3, mainImage: '', images: [], amenities: [] },
+      { id: 305, branchId: 1, roomNumber: '305', type: 'Standard', status: 'Available', pricePerNight: 150, floor: 3, description: 'Cozy room with essential amenities', guestCapacity: 2, mainImage: '', images: [], amenities: [] },
     ];
   }
 }
@@ -560,8 +560,8 @@ export async function fetchRoomKeys(): Promise<RoomKeyDto[]> {
 		return res.json();
 	} catch {
 		return [
-			{ id: 1, roomId: 1, roomNumber: '101', keyType: 'Room', status: 'Issued', issuedTo: 'Amelia Stone', issuedBy: 'Reception Desk', issuedAt: '2026-06-10 14:00', returnedAt: null, createdAt: '2026-06-10 14:00' },
-			{ id: 2, roomId: 2, roomNumber: '102', keyType: 'Room', status: 'Available', issuedTo: null, issuedBy: null, issuedAt: null, returnedAt: null, createdAt: '2026-01-01 00:00' },
+			{ id: 1, branchId: 1, roomId: 1, roomNumber: '101', keyType: 'Room', status: 'Issued', issuedTo: 'Amelia Stone', issuedBy: 'Reception Desk', issuedAt: '2026-06-10 14:00', returnedAt: null, createdAt: '2026-06-10 14:00' },
+			{ id: 2, branchId: 1, roomId: 2, roomNumber: '102', keyType: 'Room', status: 'Available', issuedTo: null, issuedBy: null, issuedAt: null, returnedAt: null, createdAt: '2026-01-01 00:00' },
 		];
 	}
 }
@@ -581,7 +581,7 @@ export async function fetchMasterKeys(): Promise<MasterKeyDto[]> {
 	}
 }
 
-export async function issueRoomKey(data: { roomId: number; roomNumber: string; issuedTo: string; issuedBy: string }): Promise<RoomKeyDto> {
+export async function issueRoomKey(data: { branchId: number; roomId: number; roomNumber: string; issuedTo: string; issuedBy: string }): Promise<RoomKeyDto> {
 	const response = await fetch(`${apiBaseUrl}/room/keys/issue`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },

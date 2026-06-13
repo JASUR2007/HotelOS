@@ -23,7 +23,7 @@ public static class RoomSeeder
         {
             (new Room
             {
-                RoomNumber = "101", Type = RoomType.Double, Status = "Available",
+                BranchId = 1, RoomNumber = "101", Type = RoomType.Double, Status = "Available",
                 PricePerNight = 220m, Floor = 1, GuestCapacity = 2,
                 MainImage = "/images/rooms/room-1.png",
                 Images = new[] { "/images/rooms/room-1.png", "/images/rooms/room-1-lg.png" },
@@ -33,7 +33,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "102", Type = RoomType.Single, Status = "Available",
+                BranchId = 1, RoomNumber = "102", Type = RoomType.Single, Status = "Available",
                 PricePerNight = 120m, Floor = 1, GuestCapacity = 1,
                 MainImage = "/images/rooms/room-2.png",
                 Images = new[] { "/images/rooms/room-2.png", "/images/rooms/room-2-lg.png" },
@@ -43,7 +43,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "103", Type = RoomType.Accessible, Status = "Available",
+                BranchId = 1, RoomNumber = "103", Type = RoomType.Accessible, Status = "Available",
                 PricePerNight = 180m, Floor = 1, GuestCapacity = 2,
                 MainImage = "/images/rooms/room-3.png",
                 Images = new[] { "/images/rooms/room-3.png", "/images/rooms/room-3-lg.png" },
@@ -53,7 +53,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "201", Type = RoomType.Suite, Status = "Available",
+                BranchId = 1, RoomNumber = "201", Type = RoomType.Suite, Status = "Available",
                 PricePerNight = 350m, Floor = 2, GuestCapacity = 4,
                 MainImage = "/images/rooms/room-4.png",
                 Images = new[] { "/images/rooms/room-4.png", "/images/rooms/room-4-lg.png" },
@@ -63,7 +63,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "202", Type = RoomType.Double, Status = "Available",
+                BranchId = 1, RoomNumber = "202", Type = RoomType.Double, Status = "Available",
                 PricePerNight = 240m, Floor = 2, GuestCapacity = 2,
                 MainImage = "/images/rooms/room-5.png",
                 Images = new[] { "/images/rooms/room-5.png", "/images/rooms/room-5-lg.png" },
@@ -73,7 +73,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "203", Type = RoomType.Single, Status = "Available",
+                BranchId = 2, RoomNumber = "203", Type = RoomType.Single, Status = "Available",
                 PricePerNight = 130m, Floor = 2, GuestCapacity = 1,
                 MainImage = "/images/rooms/room-6.png",
                 Images = new[] { "/images/rooms/room-6.png", "/images/rooms/room-6-lg.png" },
@@ -83,7 +83,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "204", Type = RoomType.Double, Status = "Available",
+                BranchId = 2, RoomNumber = "204", Type = RoomType.Double, Status = "Available",
                 PricePerNight = 260m, Floor = 2, GuestCapacity = 2,
                 MainImage = "/images/rooms/room-7.png",
                 Images = new[] { "/images/rooms/room-7.png", "/images/rooms/room-7-lg.png" },
@@ -93,7 +93,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "205", Type = RoomType.Suite, Status = "Available",
+                BranchId = 2, RoomNumber = "205", Type = RoomType.Suite, Status = "Available",
                 PricePerNight = 420m, Floor = 2, GuestCapacity = 4,
                 MainImage = "/images/rooms/room-8.png",
                 Images = new[] { "/images/rooms/room-8.png", "/images/rooms/room-8-lg.png" },
@@ -103,7 +103,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "301", Type = RoomType.Suite, Status = "Available",
+                BranchId = 2, RoomNumber = "301", Type = RoomType.Suite, Status = "Available",
                 PricePerNight = 380m, Floor = 3, GuestCapacity = 4,
                 MainImage = "/images/rooms/room-6.png",
                 Images = new[] { "/images/rooms/room-6.png", "/images/rooms/room-6-lg.png" },
@@ -113,7 +113,7 @@ public static class RoomSeeder
 
             (new Room
             {
-                RoomNumber = "302", Type = RoomType.Accessible, Status = "Available",
+                BranchId = 2, RoomNumber = "302", Type = RoomType.Accessible, Status = "Available",
                 PricePerNight = 200m, Floor = 3, GuestCapacity = 2,
                 MainImage = "/images/rooms/room-8.png",
                 Images = new[] { "/images/rooms/room-8.png", "/images/rooms/room-8-lg.png" },

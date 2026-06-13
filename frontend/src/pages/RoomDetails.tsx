@@ -138,6 +138,7 @@ export default function RoomDetails() {
           checkInDate: checkIn,
           checkOutDate: checkOut,
           guestsCount: guests,
+          branchId: room.branchId,
         }),
       });
     } catch {
@@ -153,6 +154,7 @@ export default function RoomDetails() {
         guests,
         pricePerNight: room.pricePerNight,
         total,
+        branchId: room.branchId,
       },
     });
   };

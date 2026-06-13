@@ -10,7 +10,7 @@ public sealed class KeyService(RoomDbContext context) : IKeyQueries, IKeyCommand
     public async Task<IReadOnlyList<RoomKeyDto>> GetKeysAsync(CancellationToken cancellationToken = default)
         => await context.Set<RoomKey>()
             .OrderBy(k => k.RoomNumber)
-            .Select(k => new RoomKeyDto(k.Id, k.RoomId, k.RoomNumber, k.KeyType, k.Status, k.IssuedTo, k.IssuedBy,
+            .Select(k => new RoomKeyDto(k.Id, k.BranchId, k.RoomId, k.RoomNumber, k.KeyType, k.Status, k.IssuedTo, k.IssuedBy,
                 k.IssuedAt.HasValue ? k.IssuedAt.Value.ToString("yyyy-MM-dd HH:mm") : null,
                 k.ReturnedAt.HasValue ? k.ReturnedAt.Value.ToString("yyyy-MM-dd HH:mm") : null,
                 k.CreatedAt.ToString("yyyy-MM-dd HH:mm")))
@@ -19,7 +19,7 @@ public sealed class KeyService(RoomDbContext context) : IKeyQueries, IKeyCommand
     public async Task<IReadOnlyList<RoomKeyDto>> GetKeysByRoomAsync(int roomId, CancellationToken cancellationToken = default)
         => await context.Set<RoomKey>()
             .Where(k => k.RoomId == roomId)
-            .Select(k => new RoomKeyDto(k.Id, k.RoomId, k.RoomNumber, k.KeyType, k.Status, k.IssuedTo, k.IssuedBy,
+            .Select(k => new RoomKeyDto(k.Id, k.BranchId, k.RoomId, k.RoomNumber, k.KeyType, k.Status, k.IssuedTo, k.IssuedBy,
                 k.IssuedAt.HasValue ? k.IssuedAt.Value.ToString("yyyy-MM-dd HH:mm") : null,
                 k.ReturnedAt.HasValue ? k.ReturnedAt.Value.ToString("yyyy-MM-dd HH:mm") : null,
                 k.CreatedAt.ToString("yyyy-MM-dd HH:mm")))
@@ -39,6 +39,7 @@ public sealed class KeyService(RoomDbContext context) : IKeyQueries, IKeyCommand
         {
             key = new RoomKey
             {
+                BranchId = request.BranchId,
                 RoomId = request.RoomId,
                 RoomNumber = request.RoomNumber,
                 KeyType = "Room",
@@ -55,7 +56,7 @@ public sealed class KeyService(RoomDbContext context) : IKeyQueries, IKeyCommand
         key.ReturnedAt = null;
         await context.SaveChangesAsync(cancellationToken);
 
-        return new RoomKeyDto(key.Id, key.RoomId, key.RoomNumber, key.KeyType, key.Status, key.IssuedTo, key.IssuedBy,
+        return new RoomKeyDto(key.Id, key.BranchId, key.RoomId, key.RoomNumber, key.KeyType, key.Status, key.IssuedTo, key.IssuedBy,
             key.IssuedAt.Value.ToString("yyyy-MM-dd HH:mm"), null, key.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
     }
 
@@ -68,7 +69,7 @@ public sealed class KeyService(RoomDbContext context) : IKeyQueries, IKeyCommand
         key.ReturnedAt = DateTimeOffset.UtcNow;
         await context.SaveChangesAsync(cancellationToken);
 
-        return new RoomKeyDto(key.Id, key.RoomId, key.RoomNumber, key.KeyType, key.Status, key.IssuedTo, key.IssuedBy,
+        return new RoomKeyDto(key.Id, key.BranchId, key.RoomId, key.RoomNumber, key.KeyType, key.Status, key.IssuedTo, key.IssuedBy,
             key.IssuedAt?.ToString("yyyy-MM-dd HH:mm"), key.ReturnedAt?.ToString("yyyy-MM-dd HH:mm"), key.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
     }
 
@@ -80,7 +81,7 @@ public sealed class KeyService(RoomDbContext context) : IKeyQueries, IKeyCommand
         key.Status = "Lost";
         await context.SaveChangesAsync(cancellationToken);
 
-        return new RoomKeyDto(key.Id, key.RoomId, key.RoomNumber, key.KeyType, key.Status, key.IssuedTo, key.IssuedBy,
+        return new RoomKeyDto(key.Id, key.BranchId, key.RoomId, key.RoomNumber, key.KeyType, key.Status, key.IssuedTo, key.IssuedBy,
             key.IssuedAt?.ToString("yyyy-MM-dd HH:mm"), key.ReturnedAt?.ToString("yyyy-MM-dd HH:mm"), key.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
     }
 

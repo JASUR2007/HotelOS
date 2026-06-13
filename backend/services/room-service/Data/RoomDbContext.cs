@@ -53,6 +53,7 @@ public sealed class RoomDbContext(DbContextOptions<RoomDbContext> options) : DbC
             entity.Property(r => r.MainImage).HasMaxLength(500);
             entity.Property(r => r.Images).HasColumnType("jsonb");
             entity.HasIndex(r => r.Status);
+            entity.HasIndex(r => r.BranchId);
             entity.HasMany(r => r.Amenities)
                 .WithMany(a => a.Rooms)
                 .UsingEntity<Dictionary<string, object>>(
@@ -95,6 +96,7 @@ public sealed class RoomDbContext(DbContextOptions<RoomDbContext> options) : DbC
             entity.Property(k => k.IssuedTo).HasMaxLength(200);
             entity.Property(k => k.IssuedBy).HasMaxLength(200);
             entity.Property(k => k.CreatedAt).IsRequired();
+            entity.HasIndex(k => k.BranchId);
             entity.HasIndex(k => k.RoomId);
             entity.HasIndex(k => k.Status);
         });

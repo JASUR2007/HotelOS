@@ -1,10 +1,10 @@
 namespace HotelOS.ReceptionService.DTOs;
 
-public sealed record CheckInRequestDto(string GuestName, string Email, int Adults, int Kids, DateOnly CheckInDate, DateOnly CheckOutDate, int? RoomId = null);
+public sealed record CheckInRequestDto(string GuestName, string Email, int Adults, int Kids, DateOnly CheckInDate, DateOnly CheckOutDate, int BranchId, int? RoomId = null);
 
 public sealed record CheckOutRequestDto(int BookingId, string Notes);
 
-public sealed record HoldReservationDto(int RoomId, string RoomNumber, DateOnly CheckInDate, DateOnly CheckOutDate, int GuestsCount);
+public sealed record HoldReservationDto(int RoomId, string RoomNumber, DateOnly CheckInDate, DateOnly CheckOutDate, int GuestsCount, int BranchId);
 
 public sealed record BookingResponseDto(int BookingId, int RoomId, string Status, string GuestName);
 

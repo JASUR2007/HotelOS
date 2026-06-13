@@ -45,7 +45,7 @@ public sealed class RoomService(IRoomRepository roomRepository, IOrderRepository
     public async Task<IReadOnlyList<OrderDto>> GetOrdersAsync(CancellationToken cancellationToken = default)
         => (await orderRepository.GetAllAsync(cancellationToken)).Select(order => new OrderDto(order.Id, order.RoomNumber, order.GuestName, order.Status, order.Total)).ToList();
 
-    private static RoomDto MapToDto(Room r) => new(r.Id, r.RoomNumber, r.Type.ToString(), r.Status, r.PricePerNight, r.Floor, r.Description, r.GuestCapacity, r.MainImage, r.Images, r.Amenities.Select(a => a.Name).ToArray());
+    private static RoomDto MapToDto(Room r) => new(r.Id, r.BranchId, r.RoomNumber, r.Type.ToString(), r.Status, r.PricePerNight, r.Floor, r.Description, r.GuestCapacity, r.MainImage, r.Images, r.Amenities.Select(a => a.Name).ToArray());
 
     public async Task<IReadOnlyList<RoomDto>> GetRoomsAsync(CancellationToken cancellationToken = default)
         => (await roomRepository.GetAllAsync(cancellationToken))
@@ -65,6 +65,7 @@ public sealed class RoomService(IRoomRepository roomRepository, IOrderRepository
             throw new InvalidOperationException("Room type must be Single, Double, Suite, or Accessible.");
 
         var room = RoomFactory.Create(roomType, request.RoomNumber, request.Floor);
+        room.BranchId = request.BranchId;
         room.PricePerNight = request.PricePerNight;
         room.GuestCapacity = request.GuestCapacity;
         room.Description = request.Description;
@@ -83,6 +84,7 @@ public sealed class RoomService(IRoomRepository roomRepository, IOrderRepository
         var room = await roomRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("Room not found");
 
+        room.BranchId = request.BranchId;
         room.RoomNumber = request.RoomNumber;
         room.Type = Enum.Parse<RoomType>(request.Type);
         room.Status = request.Status;

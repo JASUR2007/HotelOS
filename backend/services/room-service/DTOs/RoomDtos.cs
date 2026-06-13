@@ -1,10 +1,10 @@
 namespace HotelOS.RoomService.DTOs;
 
-public sealed record RoomDto(int Id, string RoomNumber, string Type, string Status, decimal PricePerNight, int Floor, string Description, int GuestCapacity, string MainImage, string[] Images, string[] Amenities);
+public sealed record RoomDto(int Id, int BranchId, string RoomNumber, string Type, string Status, decimal PricePerNight, int Floor, string Description, int GuestCapacity, string MainImage, string[] Images, string[] Amenities);
 
-public sealed record CreateRoomDto(string RoomNumber, string Type, int Floor, decimal PricePerNight, int GuestCapacity, string Description, string MainImage, string[] Images, string[] AmenityIds, string? Status = null);
+public sealed record CreateRoomDto(int BranchId, string RoomNumber, string Type, int Floor, decimal PricePerNight, int GuestCapacity, string Description, string MainImage, string[] Images, string[] AmenityIds, string? Status = null);
 
-public sealed record UpdateRoomDto(string RoomNumber, string Type, string Status, decimal PricePerNight, int Floor, string Description, int GuestCapacity, string MainImage, string[] Images, string[] Amenities);
+public sealed record UpdateRoomDto(int BranchId, string RoomNumber, string Type, string Status, decimal PricePerNight, int Floor, string Description, int GuestCapacity, string MainImage, string[] Images, string[] Amenities);
 
 public sealed record PatchRoomStatusDto(string Status);
 

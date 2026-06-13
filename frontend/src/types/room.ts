@@ -19,6 +19,7 @@ export interface Room {
 
 export interface ApiRoom {
   id: number;
+  branchId: number;
   roomNumber: string;
   type: string;
   status: string;

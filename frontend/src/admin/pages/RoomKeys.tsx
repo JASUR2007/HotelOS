@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { DataTable, Modal, ConfirmDeleteModal, StatusBadge } from '../components';
 import type { Column } from '../components/DataTable';
-import { fetchRoomKeys, fetchMasterKeys, issueRoomKey, returnRoomKey, markKeyLost, createMasterKey, issueMasterKey, returnMasterKey, deleteRoomKey, deleteMasterKey, fetchRooms, fetchGuests, fetchUsers } from '../../api';
-import type { RoomKeyDto, MasterKeyDto, RoomDto } from '../../types';
+import { fetchRoomKeys, fetchMasterKeys, issueRoomKey, returnRoomKey, markKeyLost, createMasterKey, issueMasterKey, returnMasterKey, deleteRoomKey, deleteMasterKey, fetchRooms, fetchGuests, fetchUsers, fetchBranches } from '../../api';
+import type { RoomKeyDto, MasterKeyDto, RoomDto, HotelBranch } from '../../types';
 
 type Tab = 'room' | 'master';
 
@@ -11,6 +11,8 @@ export default function RoomKeys() {
   const [keys, setKeys] = useState<RoomKeyDto[]>([]);
   const [masterKeys, setMasterKeys] = useState<MasterKeyDto[]>([]);
   const [rooms, setRooms] = useState<RoomDto[]>([]);
+  const [branches, setBranches] = useState<HotelBranch[]>([]);
+  const [branchFilter, setBranchFilter] = useState<number>(0);
   const [guests, setGuests] = useState<{ id: number; name: string }[]>([]);
   const [staff, setStaff] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +24,7 @@ export default function RoomKeys() {
   const [showIssue, setShowIssue] = useState(false);
   const [issueRoomId, setIssueRoomId] = useState(0);
   const [issueRoomNumber, setIssueRoomNumber] = useState('');
+  const [issueBranchId, setIssueBranchId] = useState(0);
   const [issueTo, setIssueTo] = useState('');
   const [issueBy, setIssueBy] = useState('');
 
@@ -43,10 +46,11 @@ export default function RoomKeys() {
   async function load() {
     setLoading(true);
     try {
-      const [k, mk, r, g, u] = await Promise.all([fetchRoomKeys(), fetchMasterKeys(), fetchRooms(), fetchGuests(), fetchUsers()]);
+      const [k, mk, r, g, u, b] = await Promise.all([fetchRoomKeys(), fetchMasterKeys(), fetchRooms(), fetchGuests(), fetchUsers(), fetchBranches()]);
       setKeys(k);
       setMasterKeys(mk);
       setRooms(r);
+      setBranches(b);
       setGuests(g.map((guest: { id: number; name: string }) => ({ id: guest.id, name: guest.name })));
       setStaff(u.map((user: { id: string; displayName: string }) => ({ id: user.id, name: user.displayName })));
     } catch { setError('Failed to load data'); }
@@ -60,7 +64,7 @@ export default function RoomKeys() {
   async function handleIssueKey() {
     setSaving(true); setError('');
     try {
-      await issueRoomKey({ roomId: issueRoomId, roomNumber: issueRoomNumber, issuedTo: issueTo, issuedBy: issueBy });
+      await issueRoomKey({ branchId: issueBranchId, roomId: issueRoomId, roomNumber: issueRoomNumber, issuedTo: issueTo, issuedBy: issueBy });
       setSuccess('Key issued');
       setShowIssue(false);
       setIssueTo(''); setIssueBy('');
@@ -145,6 +149,7 @@ export default function RoomKeys() {
 
   const roomColumns: Column<RoomKeyDto>[] = [
     { key: 'roomNumber', label: 'Room', sortable: true },
+    { key: 'branchId', label: 'Branch', render: (r) => branches.find(b => b.id === r.branchId)?.name ?? `Branch #${r.branchId}` },
     { key: 'keyType', label: 'Type' },
     { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
     { key: 'issuedTo', label: 'Issued To', render: (r) => r.issuedTo ?? '-' },
@@ -187,11 +192,20 @@ export default function RoomKeys() {
       {tab === 'room' && (
         <DataTable
           columns={roomColumns}
-          data={keys}
+          data={branchFilter ? keys.filter(k => k.branchId === branchFilter) : keys}
           keyExtractor={(r) => r.id}
           searchKeys={['roomNumber', 'issuedTo', 'issuedBy']}
           searchPlaceholder="Search keys..."
           loading={loading}
+          toolbar={
+            <div className="flex items-center gap-3">
+              <select value={branchFilter} onChange={(e) => setBranchFilter(Number(e.target.value))}
+                className="rounded-lg border border-primary/10 px-3 py-2 text-sm outline-none focus:border-accent">
+                <option value={0}>All Branches</option>
+                {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+          }
           actions={(row) => (
             <div className="flex gap-2">
               {row.status === 'Issued' && (
@@ -237,6 +251,7 @@ export default function RoomKeys() {
               setIssueRoomId(id);
               const room = rooms.find((r) => r.id === id);
               setIssueRoomNumber(room?.roomNumber ?? '');
+              setIssueBranchId(room?.branchId ?? 0);
             }} className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
               <option value={0}>Select room...</option>
               {rooms.filter((r) => r.status === 'Available' || r.status === 'Occupied').map((r) => (

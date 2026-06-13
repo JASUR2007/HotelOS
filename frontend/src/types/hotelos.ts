@@ -19,6 +19,7 @@ export interface RoomOverview {
 
 export interface RoomDto {
   id: number;
+  branchId: number;
   roomNumber: string;
   type: string;
   status: string;
@@ -32,6 +33,7 @@ export interface RoomDto {
 }
 
 export interface CreateRoomDto {
+  branchId: number;
   roomNumber: string;
   type: string;
   floor: number;
@@ -45,6 +47,7 @@ export interface CreateRoomDto {
 }
 
 export interface UpdateRoomDto {
+  branchId: number;
   roomNumber: string;
   type: string;
   status: string;
@@ -262,6 +265,7 @@ export interface UpdateBranchDto extends CreateBranchDto {
 
 export interface RoomKeyDto {
   id: number;
+  branchId: number;
   roomId: number;
   roomNumber: string;
   keyType: string;

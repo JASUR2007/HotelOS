@@ -2,13 +2,14 @@ import { useEffect, useState, useRef } from 'react';
 import DataTable from '../components/DataTable';
 import Modal, { ConfirmDeleteModal } from '../components/Modal';
 import StatusBadge from '../components/StatusBadge';
-import { fetchRooms, createRoom, updateRoom, deleteRoom, fetchAmenities, uploadRoomImage } from '../../api';
-import type { RoomDto, CreateRoomDto, UpdateRoomDto, AmenityDto } from '../../types';
+import { fetchRooms, createRoom, updateRoom, deleteRoom, fetchAmenities, uploadRoomImage, fetchBranches } from '../../api';
+import type { RoomDto, CreateRoomDto, UpdateRoomDto, AmenityDto, HotelBranch } from '../../types';
 
 const ROOM_TYPES = ['Single', 'Double', 'Suite', 'Accessible'];
 const ROOM_STATUSES = ['Available', 'Occupied', 'Dirty', 'Cleaning', 'Maintenance', 'Reserved'];
 
 interface RoomForm {
+  branchId: number;
   roomNumber: string;
   type: string;
   status: string;
@@ -22,7 +23,7 @@ interface RoomForm {
 }
 
 const emptyForm: RoomForm = {
-  roomNumber: '', type: 'Single', status: 'Available',
+  branchId: 1, roomNumber: '', type: 'Single', status: 'Available',
   pricePerNight: 100, floor: 1, description: '', guestCapacity: 1,
   mainImage: '', images: '', amenityIds: [],
 };
@@ -30,6 +31,8 @@ const emptyForm: RoomForm = {
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<RoomDto[]>([]);
   const [amenities, setAmenities] = useState<AmenityDto[]>([]);
+  const [branches, setBranches] = useState<HotelBranch[]>([]);
+  const [branchFilter, setBranchFilter] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<'create' | 'edit' | null>(null);
@@ -46,9 +49,10 @@ export default function RoomsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [roomData, amenityData] = await Promise.all([fetchRooms(), fetchAmenities()]);
+      const [roomData, amenityData, branchData] = await Promise.all([fetchRooms(), fetchAmenities(), fetchBranches()]);
       setRooms(roomData);
       setAmenities(amenityData);
+      setBranches(branchData);
     } catch {
       setError('Failed to load rooms. Is the backend running?');
     } finally {
@@ -59,13 +63,14 @@ export default function RoomsPage() {
   useEffect(() => { loadRooms(); }, []);
 
   function openCreate() {
-    setForm({ ...emptyForm, pricePerNight: typeToPrice('Single') });
+    setForm({ ...emptyForm, branchId: branches[0]?.id ?? 1, pricePerNight: typeToPrice('Single') });
     setEditingId(null);
     setModal('create');
   }
 
   function openEdit(room: RoomDto) {
     setForm({
+      branchId: room.branchId,
       roomNumber: room.roomNumber,
       type: room.type,
       status: room.status,
@@ -91,7 +96,7 @@ export default function RoomsPage() {
     try {
       if (modal === 'create') {
         const req: CreateRoomDto = {
-          roomNumber: form.roomNumber, type: form.type, floor: form.floor,
+          branchId: form.branchId, roomNumber: form.roomNumber, type: form.type, floor: form.floor,
           pricePerNight: form.pricePerNight, guestCapacity: form.guestCapacity,
           description: form.description, mainImage: form.mainImage,
           images: form.images.split(',').map(s => s.trim()).filter(Boolean), amenityIds: form.amenityIds,
@@ -100,7 +105,7 @@ export default function RoomsPage() {
         await createRoom(req);
       } else if (editingId) {
         const req: UpdateRoomDto = {
-          roomNumber: form.roomNumber, type: form.type, status: form.status,
+          branchId: form.branchId, roomNumber: form.roomNumber, type: form.type, status: form.status,
           pricePerNight: form.pricePerNight, floor: form.floor,
           description: form.description, guestCapacity: form.guestCapacity,
           mainImage: form.mainImage,
@@ -182,19 +187,24 @@ export default function RoomsPage() {
           { key: 'floor', label: 'Floor', sortable: true },
           { key: 'pricePerNight', label: 'Price/Night', sortable: true, render: (r: RoomDto) => `$${r.pricePerNight}` },
           { key: 'guestCapacity', label: 'Max Guests', sortable: true },
+          { key: 'branchId', label: 'Branch', render: (r: RoomDto) => branches.find(b => b.id === r.branchId)?.name ?? `Branch #${r.branchId}` },
         ]}
-        data={rooms}
+        data={branchFilter ? rooms.filter(r => r.branchId === branchFilter) : rooms}
         keyExtractor={(r) => r.id}
         searchKeys={['roomNumber', 'type', 'status']}
         searchPlaceholder="Search rooms..."
         loading={loading}
         toolbar={
-          <button
-            onClick={openCreate}
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent/90"
-          >
-            + Add Room
-          </button>
+          <div className="flex items-center gap-3">
+            <select value={branchFilter} onChange={(e) => setBranchFilter(Number(e.target.value))}
+              className="rounded-lg border border-primary/10 px-3 py-2 text-sm outline-none focus:border-accent">
+              <option value={0}>All Branches</option>
+              {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+            <button onClick={openCreate} className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent/90">
+              + Add Room
+            </button>
+          </div>
         }
         actions={(row) => (
           <>
@@ -206,6 +216,13 @@ export default function RoomsPage() {
 
       <Modal open={modal !== null} onClose={() => setModal(null)} title={modal === 'create' ? 'Add Room' : 'Edit Room'}>
         <div className="space-y-4">
+          <div>
+            <label className="mb-1 block text-xs uppercase tracking-wider text-primary/50">Branch</label>
+            <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: Number(e.target.value) })}
+              className="w-full rounded-lg border border-primary/10 px-4 py-2.5 text-sm outline-none focus:border-accent">
+              {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          </div>
           <div>
             <label className="mb-1 block text-xs uppercase tracking-wider text-primary/50">Room Number</label>
             <input value={form.roomNumber} onChange={(e) => setForm({ ...form, roomNumber: e.target.value })}

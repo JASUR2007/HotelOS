@@ -21,6 +21,7 @@ export default function PaymentPage() {
     minibarTotal?: number;
     damagesTotal?: number;
     discountsTotal?: number;
+    branchId?: number;
     expiresAt?: number;
   } | null;
 

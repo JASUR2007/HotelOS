@@ -17,12 +17,14 @@ export default function Checkout() {
     guests?: number;
     pricePerNight?: number;
     total?: number;
+    branchId?: number;
   } | null;
 
   const [roomNumber] = useState(state?.roomNumber || '');
   const [checkIn, setCheckIn] = useState(state?.checkIn || '');
   const [checkOut, setCheckOut] = useState(state?.checkOut || '');
   const [guests, setGuests] = useState(state?.guests || 1);
+  const [branchId] = useState(state?.branchId ?? 0);
   const [guestName, setGuestName] = useState(user?.displayName || '');
   const [guestEmail, setGuestEmail] = useState(user?.email || '');
   const [status, setStatus] = useState('');
@@ -72,6 +74,7 @@ export default function Checkout() {
           kids: 0,
           checkInDate: checkIn,
           checkOutDate: checkOut,
+          branchId,
         }),
       });
 
@@ -130,6 +133,7 @@ export default function Checkout() {
           minibarTotal: 0,
           damagesTotal: 0,
           discountsTotal: 0,
+          branchId,
           expiresAt: Date.now() + TIMER_MINUTES * 60 * 1000,
         },
       }), 1500);

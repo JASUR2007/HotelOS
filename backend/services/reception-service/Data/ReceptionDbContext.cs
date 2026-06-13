@@ -37,6 +37,7 @@ public sealed class ReceptionDbContext(DbContextOptions<ReceptionDbContext> opti
             entity.ToTable("bookings");
             entity.HasKey(item => item.Id);
             entity.HasIndex(item => new { item.GuestId, item.RoomId });
+            entity.HasIndex(item => item.BranchId);
             entity.Property(item => item.Status).HasMaxLength(50).IsRequired();
             entity.Property(item => item.RowVersion).IsConcurrencyToken();
             entity.HasOne<Guest>()
@@ -44,8 +45,8 @@ public sealed class ReceptionDbContext(DbContextOptions<ReceptionDbContext> opti
                 .HasForeignKey(item => item.GuestId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasData(
-                new Booking { Id = 1, GuestId = 1, RoomId = 101, CheckInDate = new DateOnly(2026, 5, 20), CheckOutDate = new DateOnly(2026, 5, 23), Status = "CheckedIn" },
-                new Booking { Id = 2, GuestId = 2, RoomId = 207, CheckInDate = new DateOnly(2026, 5, 19), CheckOutDate = new DateOnly(2026, 5, 24), Status = "Booked" }
+                new Booking { Id = 1, BranchId = 1, GuestId = 1, RoomId = 101, CheckInDate = new DateOnly(2026, 5, 20), CheckOutDate = new DateOnly(2026, 5, 23), Status = "CheckedIn" },
+                new Booking { Id = 2, BranchId = 1, GuestId = 2, RoomId = 207, CheckInDate = new DateOnly(2026, 5, 19), CheckOutDate = new DateOnly(2026, 5, 24), Status = "Booked" }
             );
         });
 

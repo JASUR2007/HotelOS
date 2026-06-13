@@ -3,6 +3,7 @@ namespace HotelOS.RoomService.Models;
 public sealed class RoomKey
 {
     public int Id { get; set; }
+    public int BranchId { get; set; }
     public int RoomId { get; set; }
     public string RoomNumber { get; set; } = string.Empty;
     public string KeyType { get; set; } = "Room"; // Room, Master

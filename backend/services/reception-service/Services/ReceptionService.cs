@@ -31,6 +31,7 @@ public sealed class ReceptionService(
 
         var booking = await bookingRepository.AddAsync(new Booking
         {
+            BranchId = request.BranchId,
             GuestId = guest.Id,
             RoomId = roomId,
             CheckInDate = request.CheckInDate,
@@ -70,6 +71,7 @@ public sealed class ReceptionService(
 
         var booking = await bookingRepository.AddAsync(new Booking
         {
+            BranchId = request.BranchId,
             GuestId = guest.Id,
             RoomId = request.RoomId,
             CheckInDate = request.CheckInDate,
@@ -221,6 +223,7 @@ public sealed class ReceptionService(
     {
         var bookings = await bookingRepository.GetAllAsync(cancellationToken);
         var guests = await guestRepository.GetAllAsync(cancellationToken);
+        var roomNumbers = await GetRoomNumbersByIdAsync(cancellationToken);
 
         var filtered = string.IsNullOrWhiteSpace(email)
             ? bookings
@@ -231,7 +234,8 @@ public sealed class ReceptionService(
             var nights = (b.CheckOutDate.ToDateTime(TimeOnly.MinValue) - b.CheckInDate.ToDateTime(TimeOnly.MinValue)).Days;
             if (nights <= 0) nights = 1;
             var guest = guests.FirstOrDefault(g => g.Id == b.GuestId);
-            return new MyReservationDto(b.Id, $"Room {b.RoomId}", b.Status, b.CheckInDate.ToString("yyyy-MM-dd"), b.CheckOutDate.ToString("yyyy-MM-dd"), nights, nights * 150m);
+            var roomNumber = roomNumbers.TryGetValue(b.RoomId, out var rn) ? rn : b.RoomId.ToString();
+            return new MyReservationDto(b.Id, roomNumber, b.Status, b.CheckInDate.ToString("yyyy-MM-dd"), b.CheckOutDate.ToString("yyyy-MM-dd"), nights, nights * 150m);
         }).ToList();
     }
 

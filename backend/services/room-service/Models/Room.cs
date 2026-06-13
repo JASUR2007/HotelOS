@@ -11,6 +11,7 @@ public enum RoomType
 public sealed class Room
 {
     public int Id { get; set; }
+    public int BranchId { get; set; }
     public string RoomNumber { get; set; } = string.Empty;
     public RoomType Type { get; set; } = RoomType.Single;
     public string Status { get; set; } = "Available";
